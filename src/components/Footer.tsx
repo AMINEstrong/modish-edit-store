@@ -5,7 +5,7 @@ export function Footer() {
     <footer className="mt-24 border-t border-border bg-background">
       <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-4">
         <div>
-          <p className="font-serif text-3xl">MAISON</p>
+          <p className="font-serif text-3xl">SLISTYLE</p>
           <p className="mt-3 text-sm text-muted-foreground">
             Considered clothing for considered lives.
           </p>
@@ -43,7 +43,7 @@ export function Footer() {
       </div>
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-6 py-6 text-xs text-muted-foreground md:flex-row">
-          <p>© {new Date().getFullYear()} Maison. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Slistyle. All rights reserved.</p>
           <p>Crafted with care.</p>
         </div>
       </div>

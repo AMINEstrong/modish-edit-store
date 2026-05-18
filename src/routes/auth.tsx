@@ -7,8 +7,8 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — Maison" },
-      { name: "description", content: "Sign in or create your Maison account." },
+      { title: "Sign in — Slistyle" },
+      { name: "description", content: "Sign in or create your Slistyle account." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -66,7 +66,7 @@ function AuthPage() {
 
   return (
     <section className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center px-6 py-16">
-      <Link to="/" className="font-serif text-3xl text-center">MAISON</Link>
+      <Link to="/" className="font-serif text-3xl text-center">SLISTYLE</Link>
       <h1 className="mt-8 font-serif text-4xl text-center">
         {mode === "signin" ? "Welcome back." : "Create account."}
       </h1>

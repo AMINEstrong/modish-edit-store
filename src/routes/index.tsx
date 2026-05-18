@@ -9,9 +9,9 @@ import { products } from "@/lib/products";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Maison — Autumn / Winter Collection" },
+      { title: "Slistyle — Autumn / Winter Collection" },
       { name: "description", content: "Discover the new season. Minimal, elevated essentials for men and women." },
-      { property: "og:title", content: "Maison — Autumn / Winter Collection" },
+      { property: "og:title", content: "Slistyle — Autumn / Winter Collection" },
       { property: "og:description", content: "Discover the new season. Minimal, elevated essentials for men and women." },
     ],
   }),
@@ -27,7 +27,7 @@ function Home() {
       <section className="relative">
         <img
           src={bannerImg}
-          alt="Maison Autumn Winter campaign"
+          alt="Slistyle Autumn Winter campaign"
           width={1920}
           height={1080}
           className="h-[80vh] w-full object-cover"

@@ -32,7 +32,7 @@ function AdminLayout() {
     <section className="mx-auto max-w-7xl px-6 py-12">
       <div className="mb-10 flex items-baseline justify-between border-b border-border pb-6">
         <div>
-          <p className="label-eyebrow text-muted-foreground">Maison Atelier</p>
+          <p className="label-eyebrow text-muted-foreground">Slistyle Atelier</p>
           <h1 className="mt-1 font-serif text-4xl">Admin</h1>
         </div>
         <nav className="flex gap-6">

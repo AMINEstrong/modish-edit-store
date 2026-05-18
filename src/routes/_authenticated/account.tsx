@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { formatPrice } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/account")({
-  head: () => ({ meta: [{ title: "Your account — Maison" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Your account — Slistyle" }, { name: "robots", content: "noindex" }] }),
   component: AccountPage,
 });
 

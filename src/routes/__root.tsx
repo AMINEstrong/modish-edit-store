@@ -72,9 +72,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Maison — Considered clothing for considered lives" },
-      { name: "description", content: "Maison is a fashion house crafting minimal, elevated essentials for men and women." },
-      { property: "og:title", content: "Maison" },
+      { title: "Slistyle — Considered clothing for considered lives" },
+      { name: "description", content: "Slistyle is a fashion house crafting minimal, elevated essentials for men and women." },
+      { property: "og:title", content: "Slistyle" },
       { property: "og:description", content: "Considered clothing for considered lives." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

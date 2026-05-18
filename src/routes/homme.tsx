@@ -9,9 +9,9 @@ import { getProducts, HOMME_CATEGORIES } from "@/lib/products";
 export const Route = createFileRoute("/homme")({
   head: () => ({
     meta: [
-      { title: "Homme — Maison" },
+      { title: "Homme — Slistyle" },
       { name: "description", content: "Tailored essentials for men. Coats, knitwear, denim and shoes." },
-      { property: "og:title", content: "Homme — Maison" },
+      { property: "og:title", content: "Homme — Slistyle" },
       { property: "og:description", content: "Tailored essentials for men." },
     ],
   }),
