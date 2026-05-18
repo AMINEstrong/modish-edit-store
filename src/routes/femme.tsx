@@ -9,9 +9,9 @@ import { getProducts, FEMME_CATEGORIES } from "@/lib/products";
 export const Route = createFileRoute("/femme")({
   head: () => ({
     meta: [
-      { title: "Femme — Maison" },
+      { title: "Femme — Slistyle" },
       { name: "description", content: "Fluid silhouettes for women. Dresses, silk tops, skirts, heels and bags." },
-      { property: "og:title", content: "Femme — Maison" },
+      { property: "og:title", content: "Femme — Slistyle" },
       { property: "og:description", content: "Fluid silhouettes for women." },
     ],
   }),

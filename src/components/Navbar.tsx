@@ -38,7 +38,7 @@ export function Navbar() {
           )}
         </nav>
 
-        <Link to="/" className="font-serif text-2xl tracking-tight">MAISON</Link>
+        <Link to="/" className="font-serif text-2xl tracking-tight">SLISTYLE</Link>
 
         <div className="flex items-center gap-5">
           <button aria-label="Search" className="hidden md:inline">
