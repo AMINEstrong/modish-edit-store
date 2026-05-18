@@ -129,11 +129,14 @@ function CartPage() {
               <span>{formatPrice(total + shipping)}</span>
             </div>
           </div>
-          <button className="label-eyebrow mt-6 w-full bg-foreground py-4 text-background transition hover:opacity-90">
+          <Link
+            to="/checkout"
+            className="label-eyebrow mt-6 block w-full bg-foreground py-4 text-center text-background transition hover:opacity-90"
+          >
             Proceed to checkout
-          </button>
+          </Link>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Secure checkout & payment coming next
+            Secure account-based checkout
           </p>
         </aside>
       </div>
