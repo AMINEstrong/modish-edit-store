@@ -1,6 +1,10 @@
 {
   "lockfileVersion": 1,
+<<<<<<< HEAD
+  "configVersion": 1,
+=======
   "configVersion": 0,
+>>>>>>> 1b958cb (fix bun lockfile)
   "workspaces": {
     "": {
       "name": "tanstack_start_ts",
@@ -60,7 +64,11 @@
         "vaul": "^1.1.2",
         "vite-tsconfig-paths": "^6.0.2",
         "zod": "^3.24.2",
+<<<<<<< HEAD
+        "zustand": "^5.0.13"
+=======
         "zustand": "^5.0.13",
+>>>>>>> 1b958cb (fix bun lockfile)
       },
       "devDependencies": {
         "@eslint/js": "^9.32.0",
@@ -79,6 +87,13 @@
         "supabase": "^2.99.0",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.56.1",
+<<<<<<< HEAD
+        "vite": "^7.3.1"
+      }
+    }
+  },
+  "packages": {}
+=======
         "vite": "^7.3.1",
       },
     },
@@ -1650,4 +1665,5 @@
 
     "@typescript-eslint/typescript-estree/minimatch/brace-expansion/balanced-match": ["balanced-match@4.0.4", "", {}, "sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA=="],
   }
+>>>>>>> 1b958cb (fix bun lockfile)
 }
