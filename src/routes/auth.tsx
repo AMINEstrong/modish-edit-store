@@ -39,7 +39,7 @@ function AuthPage() {
       if (mode === "signup") {
         const n1 = nameSchema.safeParse(fullName);
         if (!n1.success) return toast.error("Please enter your name");
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: e1.data,
           password: p1.data,
           options: {
@@ -48,8 +48,14 @@ function AuthPage() {
           },
         });
         if (error) return toast.error(error.message);
-        toast.success("Account created. Check your inbox to confirm.");
-        setMode("signin");
+        
+        if (data.session) {
+          toast.success("Account created successfully.");
+          navigate({ to: "/account" });
+        } else {
+          toast.success("Account created. Check your inbox to confirm.");
+          setMode("signin");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: e1.data,

@@ -47,7 +47,7 @@ function AccountPage() {
         <div>
           <p className="label-eyebrow text-muted-foreground">Account</p>
           <h1 className="mt-2 font-serif text-5xl">Hello.</h1>
-          <p className="mt-3 text-sm text-muted-foreground">{user?.email}</p>
+          <p className="mt-3 text-sm text-muted-foreground">{user?.user_metadata?.full_name || user?.email}</p>
         </div>
         <div className="flex flex-col gap-2 text-right">
           {isAdmin && (

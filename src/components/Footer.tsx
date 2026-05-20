@@ -3,8 +3,8 @@ import { Link } from "@tanstack/react-router";
 export function Footer() {
   return (
     <footer className="mt-24 border-t border-border bg-background">
-      <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-4">
-        <div>
+      <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-5">
+        <div className="md:col-span-2">
           <p className="font-serif text-3xl">SLISTYLE</p>
           <p className="mt-3 text-sm text-muted-foreground">
             Considered clothing for considered lives.
@@ -24,6 +24,14 @@ export function Footer() {
             <li>Shipping & returns</li>
             <li>Size guide</li>
             <li>Contact</li>
+          </ul>
+        </div>
+        <div>
+          <p className="label-eyebrow mb-4">Social</p>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li><a href="#" className="hover:text-foreground hover:underline">Instagram</a></li>
+            <li><a href="#" className="hover:text-foreground hover:underline">TikTok</a></li>
+            <li><a href="#" className="hover:text-foreground hover:underline">WhatsApp</a></li>
           </ul>
         </div>
         <div>

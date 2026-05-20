@@ -8,6 +8,7 @@ import heels from "@/assets/p-heels.jpg";
 import bag from "@/assets/p-bag.jpg";
 import top from "@/assets/p-top.jpg";
 import skirt from "@/assets/p-skirt.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Gender = "homme" | "femme";
 
@@ -19,9 +20,25 @@ export type Product = {
   gender: Gender;
   category: string;
   image: string;
-  colors: string[]; // hex
+  additionalImages: string[];
+  colors: string[];
   sizes: string[];
   description: string;
+  stock: number;
+};
+
+type ProductRow = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  price: number;
+  gender: string;
+  category: string;
+  image_url: string;
+  additional_images: string[];
+  colors: string[];
+  sizes: string[];
   stock: number;
 };
 
@@ -44,92 +61,109 @@ export const FEMME_CATEGORIES = [
   "Accessories",
 ] as const;
 
-export const products: Product[] = [
-  {
-    id: "m1", slug: "essential-cotton-tee", name: "Essential Cotton Tee",
-    price: 45, gender: "homme", category: "T-shirts", image: tshirt,
-    colors: ["#f5f3ee", "#0d0d0d", "#8b7355"],
-    sizes: ["XS", "S", "M", "L", "XL"], stock: 24,
-    description: "A wardrobe staple cut from heavyweight organic cotton. Clean lines, considered fit.",
-  },
-  {
-    id: "m2", slug: "atelier-hoodie", name: "Atelier Heavy Hoodie",
-    price: 145, gender: "homme", category: "Hoodies", image: hoodie,
-    colors: ["#2d2d2d", "#0d0d0d", "#e8e4dd"],
-    sizes: ["S", "M", "L", "XL"], stock: 12,
-    description: "500gsm brushed loopback. Boxy oversized fit with a structured hood.",
-  },
-  {
-    id: "m3", slug: "wool-overcoat", name: "Tailored Wool Overcoat",
-    price: 590, gender: "homme", category: "Jackets", image: jacket,
-    colors: ["#0d0d0d", "#2d2d2d"],
-    sizes: ["S", "M", "L", "XL"], stock: 6,
-    description: "Single-breasted overcoat in pure Italian wool. Notch lapel, two-button closure.",
-  },
-  {
-    id: "m4", slug: "selvedge-denim", name: "Selvedge Straight Denim",
-    price: 220, gender: "homme", category: "Jeans", image: jeansM,
-    colors: ["#0c1a3a", "#0d0d0d"],
-    sizes: ["28", "30", "32", "34", "36"], stock: 18,
-    description: "14oz Japanese selvedge denim with a clean straight leg. Made to age beautifully.",
-  },
-  {
-    id: "m5", slug: "low-leather-sneaker", name: "Low Leather Sneaker",
-    price: 280, gender: "homme", category: "Shoes", image: sneakers,
-    colors: ["#f5f3ee", "#0d0d0d"],
-    sizes: ["40", "41", "42", "43", "44", "45"], stock: 9,
-    description: "Hand-finished Italian leather upper on a cup sole. Quiet luxury at its best.",
-  },
-  {
-    id: "f1", slug: "silk-slip-dress", name: "Silk Bias Slip Dress",
-    price: 380, gender: "femme", category: "Dresses", image: dress,
-    colors: ["#f0ebe3", "#0d0d0d"],
-    sizes: ["XS", "S", "M", "L"], stock: 8,
-    description: "Bias-cut silk charmeuse with delicate adjustable straps. Light as air.",
-  },
-  {
-    id: "f2", slug: "draped-silk-blouse", name: "Draped Silk Blouse",
-    price: 245, gender: "femme", category: "Tops", image: top,
-    colors: ["#f0ebe3", "#0d0d0d", "#8b7355"],
-    sizes: ["XS", "S", "M", "L"], stock: 14,
-    description: "Fluid silk crêpe with a soft cowl neckline and mother-of-pearl buttons.",
-  },
-  {
-    id: "f3", slug: "pleated-midi-skirt", name: "Pleated Midi Skirt",
-    price: 195, gender: "femme", category: "Skirts", image: skirt,
-    colors: ["#c2956b", "#0d0d0d"],
-    sizes: ["XS", "S", "M", "L"], stock: 11,
-    description: "Sunray pleats in a featherlight crêpe. Sits high on the waist, flows below the knee.",
-  },
-  {
-    id: "f4", slug: "pointed-leather-pump", name: "Pointed Leather Pump",
-    price: 320, gender: "femme", category: "Heels", image: heels,
-    colors: ["#0d0d0d"],
-    sizes: ["36", "37", "38", "39", "40", "41"], stock: 7,
-    description: "A clean, elongated silhouette in soft Italian nappa leather. 90mm heel.",
-  },
-  {
-    id: "f5", slug: "structured-tote", name: "Structured Leather Tote",
-    price: 450, gender: "femme", category: "Bags", image: bag,
-    colors: ["#c2956b", "#0d0d0d"],
-    sizes: ["One Size"], stock: 5,
-    description: "Vegetable-tanned calfskin with brushed brass hardware. Roomy yet refined.",
-  },
-];
+const SLUG_IMAGES: Record<string, string> = {
+  "essential-cotton-tee": tshirt,
+  "atelier-hoodie": hoodie,
+  "wool-overcoat": jacket,
+  "selvedge-denim": jeansM,
+  "low-leather-sneaker": sneakers,
+  "silk-slip-dress": dress,
+  "draped-silk-blouse": top,
+  "pleated-midi-skirt": skirt,
+  "pointed-leather-pump": heels,
+  "structured-tote": bag,
+};
 
-export function getProduct(slug: string) {
-  return products.find((p) => p.slug === slug);
+const FILENAME_IMAGES: Record<string, string> = {
+  "p-tshirt.jpg": tshirt,
+  "p-hoodie.jpg": hoodie,
+  "p-jacket.jpg": jacket,
+  "p-jeans-m.jpg": jeansM,
+  "p-sneakers.jpg": sneakers,
+  "p-dress.jpg": dress,
+  "p-top.jpg": top,
+  "p-skirt.jpg": skirt,
+  "p-heels.jpg": heels,
+  "p-bag.jpg": bag,
+};
+
+export function resolveProductImage(slug: string, imageUrl: string): string {
+  if (
+    imageUrl.startsWith("http://") ||
+    imageUrl.startsWith("https://") ||
+    imageUrl.startsWith("data:")
+  ) {
+    return imageUrl;
+  }
+  if (SLUG_IMAGES[slug]) return SLUG_IMAGES[slug];
+  const filename = imageUrl.split("/").pop() ?? "";
+  if (FILENAME_IMAGES[filename]) return FILENAME_IMAGES[filename];
+  return imageUrl;
 }
 
-export function getProducts(filter: {
-  gender?: Gender;
-  category?: string;
-  size?: string;
-  color?: string;
-  maxPrice?: number;
-  minPrice?: number;
-  search?: string;
-} = {}) {
+export function mapProductRow(row: ProductRow): Product {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    description: row.description ?? "",
+    price: Number(row.price),
+    gender: row.gender as Gender,
+    category: row.category,
+    image: resolveProductImage(row.slug, row.image_url),
+    additionalImages: (row.additional_images ?? []).map(img => resolveProductImage(row.slug, img)),
+    colors: row.colors ?? [],
+    sizes: row.sizes ?? [],
+    stock: row.stock ?? 0,
+  };
+}
+
+export async function fetchProducts(
+  filter: {
+    gender?: Gender;
+    category?: string;
+    size?: string;
+    color?: string;
+    maxPrice?: number;
+    minPrice?: number;
+    search?: string;
+  } = {},
+): Promise<Product[]> {
+  let query = supabase.from("products").select("*").order("created_at", { ascending: false });
+
+  if (filter.gender) query = query.eq("gender", filter.gender);
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return filterProducts((data as ProductRow[]).map(mapProductRow), filter);
+}
+
+export async function fetchProductBySlug(slug: string): Promise<Product | null> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  return mapProductRow(data as ProductRow);
+}
+
+export function filterProducts(
+  products: Product[],
+  filter: {
+    gender?: Gender;
+    category?: string;
+    size?: string;
+    color?: string;
+    maxPrice?: number;
+    minPrice?: number;
+    search?: string;
+  } = {},
+): Product[] {
   return products.filter((p) => {
     if (filter.gender && p.gender !== filter.gender) return false;
     if (filter.category && p.category !== filter.category) return false;

@@ -1,17 +1,20 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Heart, Minus, Plus } from "lucide-react";
-import { getProduct, products } from "@/lib/products";
+import { Heart, Minus, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import useEmblaCarousel from "embla-carousel-react";
+import { fetchProductBySlug, fetchProducts } from "@/lib/products";
 import { useCart, useWishlist } from "@/lib/store";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, FREE_SHIPPING_THRESHOLD } from "@/lib/format";
 import { ProductCard } from "@/components/ProductCard";
 
 export const Route = createFileRoute("/products/$slug")({
-  loader: ({ params }) => {
-    const product = getProduct(params.slug);
+  loader: async ({ params }) => {
+    const product = await fetchProductBySlug(params.slug);
     if (!product) throw notFound();
-    return { product };
+    const catalog = await fetchProducts({ gender: product.gender });
+    const related = catalog.filter((p) => p.id !== product.id).slice(0, 4);
+    return { product, related };
   },
   head: ({ loaderData }) => ({
     meta: loaderData
@@ -39,7 +42,7 @@ export const Route = createFileRoute("/products/$slug")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
+  const { product, related } = Route.useLoaderData();
   const [size, setSize] = useState(product.sizes[0]);
   const [color, setColor] = useState(product.colors[0]);
   const [qty, setQty] = useState(1);
@@ -49,9 +52,25 @@ function ProductPage() {
   const toggleWish = useWishlist((s) => s.toggle);
   const inWish = useWishlist((s) => s.ids.includes(product.id));
 
-  const related = products
-    .filter((p) => p.gender === product.gender && p.id !== product.id)
-    .slice(0, 4);
+  const images = [product.image, ...(product.additionalImages || [])].filter(Boolean);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
+  const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
+  const scrollTo = useCallback((index: number) => emblaApi && emblaApi.scrollTo(index), [emblaApi]);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi, setSelectedIndex]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+  }, [emblaApi, onSelect]);
 
   return (
     <>
@@ -60,13 +79,56 @@ function ProductPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          className="aspect-[4/5] overflow-hidden bg-secondary"
+          className="group relative aspect-[4/5] w-full overflow-hidden bg-secondary"
         >
-          <img
-            src={product.image}
-            alt={product.name}
-            className="h-full w-full object-cover"
-          />
+          <div className="h-full overflow-hidden" ref={emblaRef}>
+            <div className="flex h-full touch-pan-y">
+              {images.map((img, i) => (
+                <div key={img} className="min-w-0 flex-[0_0_100%]">
+                  <img
+                    src={img}
+                    alt={`${product.name} - Vue ${i + 1}`}
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {images.length > 1 && (
+            <>
+              {/* Flèches */}
+              <button
+                onClick={scrollPrev}
+                className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground opacity-0 backdrop-blur-sm transition-all hover:bg-background group-hover:opacity-100"
+                aria-label="Image précédente"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={scrollNext}
+                className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground opacity-0 backdrop-blur-sm transition-all hover:bg-background group-hover:opacity-100"
+                aria-label="Image suivante"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+              
+              {/* Dots */}
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                {images.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => scrollTo(i)}
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === selectedIndex ? "w-6 bg-foreground" : "w-1.5 bg-foreground/40 hover:bg-foreground/60"
+                    }`}
+                    aria-label={`Aller à l'image ${i + 1}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </motion.div>
 
         <motion.div
@@ -91,7 +153,7 @@ function ProductPage() {
           <div className="mt-8">
             <p className="label-eyebrow mb-3">Colour</p>
             <div className="flex gap-2">
-              {product.colors.map((c: string) => (
+              {product.colors.map((c) => (
                 <button
                   key={c}
                   onClick={() => setColor(c)}
@@ -113,7 +175,7 @@ function ProductPage() {
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {product.sizes.map((s: string) => (
+              {product.sizes.map((s) => (
                 <button
                   key={s}
                   onClick={() => setSize(s)}
@@ -173,7 +235,7 @@ function ProductPage() {
           </div>
 
           <div className="mt-10 space-y-3 border-t border-border pt-6 text-xs text-muted-foreground">
-            <p>Free shipping on orders over €200</p>
+            <p>Livraison gratuite à partir de {formatPrice(FREE_SHIPPING_THRESHOLD)}</p>
             <p>Complimentary returns within 30 days</p>
             <p>Crafted in our European atelier</p>
           </div>

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/lib/store";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/format";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/checkout")({
@@ -36,11 +36,11 @@ function CheckoutPage() {
   const clear = useCart((s) => s.clear);
   const [form, setForm] = useState({
     full_name: "", email: user?.email ?? "", phone: "",
-    address: "", city: "", postal_code: "", country: "France",
+    address: "", city: "", postal_code: "", country: "Maroc",
   });
   const [saving, setSaving] = useState(false);
 
-  const shipping = total > 200 || total === 0 ? 0 : 15;
+  const shipping = total > FREE_SHIPPING_THRESHOLD || total === 0 ? 0 : SHIPPING_FEE;
   const grand = total + shipping;
 
   if (authLoading) {

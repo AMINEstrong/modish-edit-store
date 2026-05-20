@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useWishlist } from "@/lib/store";
-import { products } from "@/lib/products";
+import { useProductsByIds } from "@/hooks/use-products";
 import { ProductCard } from "@/components/ProductCard";
 
 export const Route = createFileRoute("/wishlist")({
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/wishlist")({
 
 function WishlistPage() {
   const ids = useWishlist((s) => s.ids);
-  const items = products.filter((p) => ids.includes(p.id));
+  const { data: items = [], isLoading } = useProductsByIds(ids);
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-16">
@@ -24,7 +24,9 @@ function WishlistPage() {
         {items.length} saved {items.length === 1 ? "piece" : "pieces"}
       </p>
 
-      {items.length === 0 ? (
+      {isLoading ? (
+        <p className="py-24 text-center text-sm text-muted-foreground">Loading…</p>
+      ) : items.length === 0 ? (
         <div className="py-24 text-center">
           <p className="text-sm text-muted-foreground">
             Nothing saved yet. Tap the heart on any piece you love.

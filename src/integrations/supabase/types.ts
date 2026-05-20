@@ -109,6 +109,7 @@ export type Database = {
       }
       products: {
         Row: {
+          additional_images: string[]
           category: string
           colors: string[]
           created_at: string
@@ -124,6 +125,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          additional_images?: string[]
           category: string
           colors?: string[]
           created_at?: string
@@ -139,6 +141,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          additional_images?: string[]
           category?: string
           colors?: string[]
           created_at?: string
@@ -173,6 +176,30 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          id: string
+          hero_banner_url: string | null
+          hero_homme_url: string | null
+          hero_femme_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          hero_banner_url?: string | null
+          hero_homme_url?: string | null
+          hero_femme_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          hero_banner_url?: string | null
+          hero_homme_url?: string | null
+          hero_femme_url?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }

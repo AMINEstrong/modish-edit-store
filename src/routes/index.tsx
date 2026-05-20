@@ -4,9 +4,11 @@ import hommeImg from "@/assets/hero-homme.jpg";
 import femmeImg from "@/assets/hero-femme.jpg";
 import bannerImg from "@/assets/hero-banner.jpg";
 import { ProductCard } from "@/components/ProductCard";
-import { products } from "@/lib/products";
+import { useProducts } from "@/hooks/use-products";
+import { fetchSettings } from "@/lib/settings";
 
 export const Route = createFileRoute("/")({
+  loader: () => fetchSettings(),
   head: () => ({
     meta: [
       { title: "Slistyle — Autumn / Winter Collection" },
@@ -19,18 +21,26 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const settings = Route.useLoaderData();
+  const { data: products = [], isLoading } = useProducts();
   const featured = products.slice(0, 5);
+
+  const finalBanner = settings?.hero_banner_url || bannerImg;
+  const finalHomme = settings?.hero_homme_url || hommeImg;
+  const finalFemme = settings?.hero_femme_url || femmeImg;
 
   return (
     <>
       {/* Hero */}
       <section className="relative">
         <img
-          src={bannerImg}
+          src={finalBanner}
           alt="Slistyle Autumn Winter campaign"
           width={1920}
           height={1080}
           className="h-[80vh] w-full object-cover"
+          fetchPriority="high"
+          decoding="async"
         />
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-16 text-center">
           <motion.p
@@ -75,8 +85,8 @@ function Home() {
       <section className="mx-auto max-w-7xl px-6 py-20">
         <div className="grid gap-6 md:grid-cols-2">
           {[
-            { to: "/homme" as const, img: hommeImg, label: "Homme", subtitle: "Tailored essentials" },
-            { to: "/femme" as const, img: femmeImg, label: "Femme", subtitle: "Fluid silhouettes" },
+            { to: "/homme" as const, img: finalHomme, label: "Homme", subtitle: "Tailored essentials" },
+            { to: "/femme" as const, img: finalFemme, label: "Femme", subtitle: "Fluid silhouettes" },
           ].map((c, i) => (
             <motion.div
               key={c.label}
@@ -91,6 +101,7 @@ function Home() {
                     src={c.img}
                     alt={c.label}
                     loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
                   />
                   <div className="absolute bottom-8 left-8 text-background">
@@ -116,9 +127,13 @@ function Home() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-5">
-          {featured.map((p, i) => (
-            <ProductCard key={p.id} product={p} index={i} />
-          ))}
+          {isLoading ? (
+            <p className="col-span-full py-12 text-center text-sm text-muted-foreground">Loading…</p>
+          ) : (
+            featured.map((p, i) => (
+              <ProductCard key={p.id} product={p} index={i} />
+            ))
+          )}
         </div>
       </section>
 

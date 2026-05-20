@@ -1,12 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import hero from "@/assets/hero-homme.jpg";
 import { ProductCard } from "@/components/ProductCard";
 import { Filters, type FilterState } from "@/components/Filters";
-import { getProducts, HOMME_CATEGORIES } from "@/lib/products";
+import { useProducts } from "@/hooks/use-products";
+import { HOMME_CATEGORIES } from "@/lib/products";
+import { fetchSettings } from "@/lib/settings";
 
 export const Route = createFileRoute("/homme")({
+  loader: () => fetchSettings(),
   head: () => ({
     meta: [
       { title: "Homme — Slistyle" },
@@ -19,7 +22,8 @@ export const Route = createFileRoute("/homme")({
 });
 
 function HommePage() {
-  const all = useMemo(() => getProducts({ gender: "homme" }), []);
+  const settings = Route.useLoaderData();
+  const { data: all = [], isLoading } = useProducts({ gender: "homme" });
   const [filter, setFilter] = useState<FilterState>({
     category: null,
     size: null,
@@ -38,7 +42,13 @@ function HommePage() {
   return (
     <>
       <section className="relative h-[55vh] overflow-hidden">
-        <img src={hero} alt="Homme collection" className="h-full w-full object-cover" />
+        <img 
+          src={settings?.hero_homme_url || hero}  
+          alt="Homme collection" 
+          className="h-full w-full object-cover" 
+          fetchPriority="high" 
+          decoding="async" 
+        />
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-foreground/10 text-background">
           <motion.p
             initial={{ opacity: 0 }}
@@ -71,7 +81,9 @@ function HommePage() {
             <p className="label-eyebrow mb-6 text-muted-foreground">
               {filtered.length} {filtered.length === 1 ? "piece" : "pieces"}
             </p>
-            {filtered.length === 0 ? (
+            {isLoading ? (
+              <p className="py-20 text-center text-sm text-muted-foreground">Loading…</p>
+            ) : filtered.length === 0 ? (
               <p className="py-20 text-center text-sm text-muted-foreground">
                 No pieces match your filters.
               </p>

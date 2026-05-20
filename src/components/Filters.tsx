@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import type { Product } from "@/lib/products";
+import { formatPrice } from "@/lib/format";
 
 export type FilterState = {
   category: string | null;
@@ -98,7 +99,7 @@ export function Filters({
       <div>
         <div className="mb-3 flex items-baseline justify-between">
           <p className="label-eyebrow">Price</p>
-          <span className="text-xs text-muted-foreground">up to €{state.maxPrice}</span>
+          <span className="text-xs text-muted-foreground">jusqu&apos;à {formatPrice(state.maxPrice)}</span>
         </div>
         <input
           type="range"
