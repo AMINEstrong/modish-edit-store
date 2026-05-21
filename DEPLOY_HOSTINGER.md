@@ -5,7 +5,7 @@ Ce projet utilise **TanStack Start + Nitro** (`preset: node-server`). Le domaine
 ## Prérequis
 
 - Plan **Business** (ou Cloud) avec **Node.js Web App**
-- Node.js **20.x** (voir `.nvmrc`)
+- Node.js **22.x** minimum **22.12** (voir `.nvmrc` — TanStack Start l’exige)
 - Dépôt Git ou archive ZIP (**sans** `node_modules`, **sans** `.output`)
 
 ## Configuration hPanel
@@ -17,7 +17,7 @@ Ce projet utilise **TanStack Start + Nitro** (`preset: node-server`). Le domaine
 | Champ | Valeur |
 |--------|--------|
 | Framework | **Other** (ou Vite si proposé) |
-| Node version | **20** |
+| Node version | **22** (obligatoire, pas 20) |
 | Install command | `npm ci` (ou `npm install`) |
 | Build command | `npm run build` |
 | Start command | `npm start` |
@@ -69,11 +69,12 @@ Le build doit s’exécuter **sur Hostinger** (Linux), pas en uploadant un dossi
 |----------|----------------|
 | **403** sur le domaine | Domaine encore sur `public_html` / site statique |
 | **404** | Mauvais start command ou `.output` absent après build |
-| Build failed | `package.json` sans script `start`, ou variables `VITE_*` manquantes au build |
+| Build failed | Node **20** au lieu de **22**, ou variables `VITE_*` manquantes au build |
+| `ERR_REQUIRE_CYCLE_MODULE` | Ancienne config Lovable — mettre à jour le dépôt (vite.config.ts natif) |
 | App crash au run | Variables `SUPABASE_*` manquantes en production |
 
 ## Fichiers utiles
 
-- `vite.config.ts` — `cloudflare: false`, plugin `nitro({ preset: "node-server" })`
+- `vite.config.ts` — config Vite ESM native + `nitro({ preset: "node-server" })` (sans package Lovable)
 - `hostinger.json` — rappel des valeurs hPanel
 - `.env.example` — liste des variables
