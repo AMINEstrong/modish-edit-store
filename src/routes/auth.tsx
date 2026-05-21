@@ -43,19 +43,13 @@ function AuthPage() {
           email: e1.data,
           password: p1.data,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
             data: { full_name: n1.data },
           },
         });
         if (error) return toast.error(error.message);
         
-        if (data.session) {
-          toast.success("Account created successfully.");
-          navigate({ to: "/account" });
-        } else {
-          toast.success("Account created. Check your inbox to confirm.");
-          setMode("signin");
-        }
+        toast.success("Account created successfully.");
+        navigate({ to: "/account" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: e1.data,
