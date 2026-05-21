@@ -6,7 +6,7 @@
   "build": {
     "installCommand": "npm ci",
     "buildCommand": "npm run build",
-    "outputDirectory": ".output"
+    "outputDirectory": "dist"
   },
   "run": {
     "startCommand": "npm start",

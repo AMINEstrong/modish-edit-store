@@ -21,7 +21,7 @@ Ce projet utilise **TanStack Start + Nitro** (`preset: node-server`). Le domaine
 | Install command | `npm ci` (ou `npm install`) |
 | Build command | `npm run build` |
 | Start command | `npm start` |
-| Output directory | *(laisser vide — Nitro sert tout via Node)* |
+| Output directory | **`dist`** (obligatoire — créé par le post-build Hostinger) |
 | Root directory | `/` (racine du repo) |
 
 4. **Environment variables** (voir `.env.example`) — **avant** le build pour `VITE_*` :
@@ -43,7 +43,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY=...
 
 ```bash
 npm ci
-npm run build    # génère .output/public + .output/server
+npm run build    # génère .output/ + dist/ (pour la vérif Hostinger)
 npm start        # node .output/server/index.mjs (PORT, HOST via env)
 ```
 
@@ -69,6 +69,7 @@ Le build doit s’exécuter **sur Hostinger** (Linux), pas en uploadant un dossi
 |----------|----------------|
 | **403** sur le domaine | Domaine encore sur `public_html` / site statique |
 | **404** | Mauvais start command ou `.output` absent après build |
+| **No output directory found** | Output directory dans hPanel ≠ **`dist`**, ou build sans `scripts/hostinger-postbuild.mjs` |
 | Build failed | Node **20** au lieu de **22**, ou variables `VITE_*` manquantes au build |
 | `ERR_REQUIRE_CYCLE_MODULE` | Ancienne config Lovable — mettre à jour le dépôt (vite.config.ts natif) |
 | App crash au run | Variables `SUPABASE_*` manquantes en production |
