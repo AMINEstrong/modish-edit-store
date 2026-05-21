@@ -1,7 +1,7 @@
 /**
- * Hostinger requires a visible output directory (e.g. dist/) after build.
- * Nitro writes the runnable app to .output/ — this script mirrors public assets
- * into dist/ so the Hostinger deploy check passes. The app still starts via npm start.
+ * Hostinger requires a visible output directory (dist/) after build.
+ * Copies Nitro server + public assets into dist/ so checks pass and
+ * Entry file can be dist/server/index.mjs if hPanel asks for it.
  */
 import { cpSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -24,12 +24,14 @@ if (existsSync(publicDir)) {
   cpSync(publicDir, join(hostingerDist, "public"), { recursive: true });
 }
 
+cpSync(join(nitroOut, "server"), join(hostingerDist, "server"), { recursive: true });
+
 writeFileSync(
   join(hostingerDist, "hostinger-build.json"),
   `${JSON.stringify(
     {
       type: "tanstack-start-nitro",
-      serverEntry: ".output/server/index.mjs",
+      serverEntry: "dist/server/index.mjs",
       startCommand: "npm start",
       builtAt: new Date().toISOString(),
     },
@@ -38,4 +40,4 @@ writeFileSync(
   )}\n`,
 );
 
-console.log("[hostinger-postbuild] dist/ created for Hostinger (SSR entry: .output/server/index.mjs)");
+console.log("[hostinger-postbuild] dist/ ready (server: dist/server/index.mjs)");

@@ -10,6 +10,7 @@
   },
   "run": {
     "startCommand": "npm start",
+    "entryFile": "dist/server/index.mjs",
     "port": 3000
   }
 }
