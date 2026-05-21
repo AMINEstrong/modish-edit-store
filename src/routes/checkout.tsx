@@ -30,22 +30,23 @@ const schema = z.object({
 
 function CheckoutPage() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const items = useCart((s) => s.items);
   const total = useCart((s) => s.items.reduce((a, i) => a + i.quantity * i.product.price, 0));
   const clear = useCart((s) => s.clear);
   const [form, setForm] = useState({
-    full_name: "", email: user?.email ?? "", phone: "",
-    address: "", city: "", postal_code: "", country: "Maroc",
+    full_name: "", 
+    email: user?.email ?? "", 
+    phone: "",
+    address: "", 
+    city: "", 
+    postal_code: "", 
+    country: "Maroc",
   });
   const [saving, setSaving] = useState(false);
 
   const shipping = total > FREE_SHIPPING_THRESHOLD || total === 0 ? 0 : SHIPPING_FEE;
   const grand = total + shipping;
-
-  if (authLoading) {
-    return <div className="mx-auto max-w-md px-6 py-32 text-center"><p className="label-eyebrow text-muted-foreground">Loading…</p></div>;
-  }
 
   if (items.length === 0) {
     return (
@@ -79,6 +80,7 @@ function CheckoutPage() {
       if (lookupErr) throw lookupErr;
       const idBySlug = new Map((dbProducts ?? []).map((p) => [p.slug, p.id as string]));
 
+      // Create order with or without user_id (guest or authenticated)
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
@@ -118,6 +120,11 @@ function CheckoutPage() {
   return (
     <section className="mx-auto max-w-6xl px-6 py-16">
       <h1 className="font-serif text-5xl">Checkout</h1>
+      {!user && (
+        <p className="mt-2 text-sm text-muted-foreground">
+          Ordering as a guest — no account needed
+        </p>
+      )}
 
       <div className="mt-12 grid gap-12 md:grid-cols-[1fr_360px]">
         <form onSubmit={submit} className="space-y-4">
