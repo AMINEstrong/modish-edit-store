@@ -47,21 +47,6 @@ function CheckoutPage() {
     return <div className="mx-auto max-w-md px-6 py-32 text-center"><p className="label-eyebrow text-muted-foreground">Loading…</p></div>;
   }
 
-  if (!user) {
-    return (
-      <div className="mx-auto max-w-md px-6 py-32 text-center">
-        <h1 className="font-serif text-4xl">Sign in to checkout</h1>
-        <p className="mt-3 text-sm text-muted-foreground">You need an account to place an order.</p>
-        <button
-          onClick={() => navigate({ to: "/auth" })}
-          className="label-eyebrow mt-6 bg-foreground px-6 py-3 text-background"
-        >
-          Sign in
-        </button>
-      </div>
-    );
-  }
-
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-md px-6 py-32 text-center">
@@ -97,7 +82,7 @@ function CheckoutPage() {
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
-          user_id: user.id,
+          user_id: user?.id ?? null,
           ...parsed.data,
           phone: parsed.data.phone || null,
           total: grand,
@@ -121,7 +106,7 @@ function CheckoutPage() {
 
       clear();
       toast.success("Order placed. Thank you.");
-      navigate({ to: "/account" });
+      navigate({ to: "/" });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not place order";
       toast.error(message);
