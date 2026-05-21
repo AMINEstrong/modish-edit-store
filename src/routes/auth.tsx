@@ -4,6 +4,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { canAttemptAuth, recordAuthAttempt, getRemainingWaitTime } from "@/lib/auth-rate-limit";
+import { signUpUserFn } from "@/lib/server-functions";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -59,22 +60,34 @@ function AuthPage() {
         const n1 = nameSchema.safeParse(fullName);
         if (!n1.success) return toast.error("Please enter your name");
         
-        const { data, error } = await supabase.auth.signUp({
-          email: e1.data,
-          password: p1.data,
-          options: {
-            data: { full_name: n1.data },
-          },
+        const result = await signUpUserFn({
+          data: {
+            email: e1.data,
+            password: p1.data,
+            fullName: n1.data,
+          }
         });
-        if (error) {
+
+        if (!result.success) {
           // Enregistrer la tentative en cas d'erreur pour rate limit
           recordAuthAttempt(e1.data);
-          return toast.error(error.message);
+          return toast.error(result.error || "Failed to create account");
         }
         
+        // Successfully created! Now immediately sign them in with their password
+        const { error: signInErr } = await supabase.auth.signInWithPassword({
+          email: e1.data,
+          password: p1.data,
+        });
+
+        if (signInErr) {
+          recordAuthAttempt(e1.data);
+          return toast.error("Account created, but could not sign in automatically: " + signInErr.message);
+        }
+
         // Enregistrer la tentative réussie
         recordAuthAttempt(e1.data);
-        toast.success("Account created successfully.");
+        toast.success("Account created and signed in successfully.");
         navigate({ to: "/account" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -99,7 +112,10 @@ function AuthPage() {
 
   return (
     <section className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center px-6 py-16">
-      <Link to="/" className="font-serif text-3xl text-center">SLISTYLE</Link>
+      <Link to="/" className="font-serif text-3xl text-center tracking-wide font-medium">
+        <span className="text-foreground">SLI</span>
+        <span style={{ color: "#c5a880" }}>STYLE</span>
+      </Link>
       <h1 className="mt-8 font-serif text-4xl text-center">
         {mode === "signin" ? "Welcome back." : "Create account."}
       </h1>

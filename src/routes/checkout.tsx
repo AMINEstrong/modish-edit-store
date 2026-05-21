@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/lib/store";
 import { formatPrice, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/format";
 import { toast } from "sonner";
+import { placeOrderFn } from "@/lib/server-functions";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -36,7 +37,7 @@ function CheckoutPage() {
   const clear = useCart((s) => s.clear);
   const [form, setForm] = useState({
     full_name: "", 
-    email: user?.email ?? "", 
+    email: user?.email ?? "guest@slistyle.com", 
     phone: "",
     address: "", 
     city: "", 
@@ -44,6 +45,12 @@ function CheckoutPage() {
     country: "Maroc",
   });
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (user?.email) {
+      setForm((prev) => ({ ...prev, email: user.email }));
+    }
+  }, [user]);
 
   const shipping = total > FREE_SHIPPING_THRESHOLD || total === 0 ? 0 : SHIPPING_FEE;
   const grand = total + shipping;
@@ -71,64 +78,29 @@ function CheckoutPage() {
     }
     setSaving(true);
     try {
-      console.log("📦 Starting order submission...", { user_id: user?.id ?? null, form: parsed.data });
+      console.log("📦 Starting order submission on server...", { user_id: user?.id ?? null, form: parsed.data });
 
-      // Match product slug -> product id from DB for items
-      const slugs = Array.from(new Set(items.map((i) => i.product.slug)));
-      console.log("🔍 Looking up products by slugs:", slugs);
-      
-      const { data: dbProducts, error: lookupErr } = await supabase
-        .from("products")
-        .select("id, slug")
-        .in("slug", slugs);
-      
-      if (lookupErr) {
-        console.error("❌ Product lookup error:", lookupErr);
-        throw lookupErr;
-      }
-      console.log("✅ Products found:", dbProducts?.length);
-      
-      const idBySlug = new Map((dbProducts ?? []).map((p) => [p.slug, p.id as string]));
-
-      // Create order
-      console.log("📝 Creating order...");
-      const { data: order, error: orderErr } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user?.id ?? null,
-          ...parsed.data,
-          phone: parsed.data.phone || null,
+      const orderResult = await placeOrderFn({
+        data: {
+          userId: user?.id ?? null,
+          orderData: parsed.data,
+          items: items.map((i) => ({
+            productSlug: i.product.slug,
+            productName: i.product.name,
+            size: i.size,
+            color: i.color,
+            quantity: i.quantity,
+            unitPrice: i.product.price,
+          })),
           total: grand,
-          status: "pending",
-        })
-        .select()
-        .single();
-      
-      if (orderErr) {
-        console.error("❌ Order creation error:", orderErr);
-        throw orderErr;
-      }
-      console.log("✅ Order created:", order?.id);
+        }
+      });
 
-      // Insert order items
-      const itemsPayload = items.map((i) => ({
-        order_id: order.id,
-        product_id: idBySlug.get(i.product.slug) ?? null,
-        product_name: i.product.name,
-        size: i.size,
-        color: i.color,
-        quantity: i.quantity,
-        unit_price: i.product.price,
-      }));
-      
-      console.log("📋 Inserting order items:", itemsPayload.length);
-      const { error: itemsErr } = await supabase.from("order_items").insert(itemsPayload);
-      
-      if (itemsErr) {
-        console.error("❌ Order items error:", itemsErr);
-        throw itemsErr;
+      if (!orderResult.success) {
+        throw new Error(orderResult.error || "Could not place order");
       }
-      console.log("✅ Order items inserted successfully");
+
+      console.log("✅ Order placed successfully on server:", orderResult.orderId);
 
       clear();
       toast.success("Order placed. Thank you.");
@@ -156,14 +128,9 @@ function CheckoutPage() {
       <div className="mt-12 grid gap-12 md:grid-cols-[1fr_360px]">
         <form onSubmit={submit} className="space-y-4">
           <h2 className="label-eyebrow">Contact & shipping</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Full name">
-              <input required value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="input" />
-            </Field>
-            <Field label="Email">
-              <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input" />
-            </Field>
-          </div>
+          <Field label="Full name">
+            <input required value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="input" />
+          </Field>
           <Field label="Address">
             <input required value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="input" />
           </Field>
