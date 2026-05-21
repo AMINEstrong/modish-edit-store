@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { canAttemptAuth, recordAuthAttempt, getRemainingWaitTime } from "@/lib/auth-rate-limit";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -26,19 +27,38 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
+
+  useEffect(() => {
+    // Mettre à jour le temps d'attente restant
+    const timer = setInterval(() => {
+      setRemainingTime(getRemainingWaitTime(email));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    
     try {
       const e1 = emailSchema.safeParse(email);
-      const p1 = passwordSchema.safeParse(password);
       if (!e1.success) return toast.error("Invalid email");
+
+      // Vérifier le rate limit
+      if (!canAttemptAuth(e1.data)) {
+        const seconds = Math.ceil(remainingTime / 1000);
+        return toast.error(`Please wait ${seconds}s before trying again`);
+      }
+
+      setLoading(true);
+      const p1 = passwordSchema.safeParse(password);
       if (!p1.success) return toast.error("Password must be at least 6 characters");
 
       if (mode === "signup") {
         const n1 = nameSchema.safeParse(fullName);
         if (!n1.success) return toast.error("Please enter your name");
+        
         const { data, error } = await supabase.auth.signUp({
           email: e1.data,
           password: p1.data,
@@ -46,8 +66,14 @@ function AuthPage() {
             data: { full_name: n1.data },
           },
         });
-        if (error) return toast.error(error.message);
+        if (error) {
+          // Enregistrer la tentative en cas d'erreur pour rate limit
+          recordAuthAttempt(e1.data);
+          return toast.error(error.message);
+        }
         
+        // Enregistrer la tentative réussie
+        recordAuthAttempt(e1.data);
         toast.success("Account created successfully.");
         navigate({ to: "/account" });
       } else {
@@ -55,7 +81,12 @@ function AuthPage() {
           email: e1.data,
           password: p1.data,
         });
-        if (error) return toast.error(error.message);
+        if (error) {
+          recordAuthAttempt(e1.data);
+          return toast.error(error.message);
+        }
+        
+        recordAuthAttempt(e1.data);
         toast.success("Welcome back.");
         navigate({ to: "/account" });
       }
@@ -63,6 +94,8 @@ function AuthPage() {
       setLoading(false);
     }
   };
+
+  const isRateLimited = remainingTime > 0;
 
   return (
     <section className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center px-6 py-16">
@@ -80,7 +113,8 @@ function AuthPage() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
-              className="w-full border border-border bg-background px-3 py-3 text-sm outline-none focus:border-foreground"
+              disabled={isRateLimited}
+              className="w-full border border-border bg-background px-3 py-3 text-sm outline-none focus:border-foreground disabled:opacity-50"
             />
           </div>
         )}
@@ -92,7 +126,8 @@ function AuthPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
-            className="w-full border border-border bg-background px-3 py-3 text-sm outline-none focus:border-foreground"
+            disabled={isRateLimited}
+            className="w-full border border-border bg-background px-3 py-3 text-sm outline-none focus:border-foreground disabled:opacity-50"
           />
         </div>
         <div>
@@ -103,22 +138,30 @@ function AuthPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
+            disabled={isRateLimited}
             autoComplete={mode === "signup" ? "new-password" : "current-password"}
-            className="w-full border border-border bg-background px-3 py-3 text-sm outline-none focus:border-foreground"
+            className="w-full border border-border bg-background px-3 py-3 text-sm outline-none focus:border-foreground disabled:opacity-50"
           />
         </div>
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || isRateLimited}
           className="label-eyebrow w-full bg-foreground py-4 text-background transition hover:opacity-90 disabled:opacity-50"
         >
-          {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+          {isRateLimited 
+            ? `Wait ${Math.ceil(remainingTime / 1000)}s…` 
+            : loading 
+            ? "Please wait…" 
+            : mode === "signin" 
+            ? "Sign in" 
+            : "Create account"}
         </button>
       </form>
 
       <button
         onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
         className="mt-6 text-center text-sm text-muted-foreground hover:text-foreground"
+        disabled={isRateLimited}
       >
         {mode === "signin"
           ? "Don't have an account? Create one"
