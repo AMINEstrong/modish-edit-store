@@ -1,0 +1,15 @@
+{
+  "_comment": "Reference values for hPanel → Websites → Node.js (not an auto-loaded Hostinger API file).",
+  "name": "modish-edit-store",
+  "framework": "other",
+  "nodeVersion": "20",
+  "build": {
+    "installCommand": "npm ci",
+    "buildCommand": "npm run build",
+    "outputDirectory": ".output"
+  },
+  "run": {
+    "startCommand": "npm start",
+    "port": 3000
+  }
+}

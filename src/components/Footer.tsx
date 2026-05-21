@@ -5,7 +5,10 @@ export function Footer() {
     <footer className="mt-24 border-t border-border bg-background">
       <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-5">
         <div className="md:col-span-2">
-          <p className="font-serif text-3xl">SLISTYLE</p>
+          <p className="font-serif text-3xl tracking-wide font-medium">
+            <span className="text-foreground">SLI</span>
+            <span style={{ color: "#c5a880" }}>STYLE</span>
+          </p>
           <p className="mt-3 text-sm text-muted-foreground">
             Considered clothing for considered lives.
           </p>

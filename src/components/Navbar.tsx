@@ -87,8 +87,9 @@ export function Navbar() {
           )}
         </nav>
 
-        <Link to="/" className="font-serif text-2xl tracking-tight">
-          SLISTYLE
+        <Link to="/" className="font-serif text-2xl tracking-wide font-medium">
+          <span className="text-foreground">SLI</span>
+          <span style={{ color: "#c5a880" }}>STYLE</span>
         </Link>
 
         <div className="flex items-center gap-5">
