@@ -71,16 +71,27 @@ function CheckoutPage() {
     }
     setSaving(true);
     try {
+      console.log("📦 Starting order submission...", { user_id: user?.id ?? null, form: parsed.data });
+
       // Match product slug -> product id from DB for items
       const slugs = Array.from(new Set(items.map((i) => i.product.slug)));
+      console.log("🔍 Looking up products by slugs:", slugs);
+      
       const { data: dbProducts, error: lookupErr } = await supabase
         .from("products")
         .select("id, slug")
         .in("slug", slugs);
-      if (lookupErr) throw lookupErr;
+      
+      if (lookupErr) {
+        console.error("❌ Product lookup error:", lookupErr);
+        throw lookupErr;
+      }
+      console.log("✅ Products found:", dbProducts?.length);
+      
       const idBySlug = new Map((dbProducts ?? []).map((p) => [p.slug, p.id as string]));
 
-      // Create order with or without user_id (guest or authenticated)
+      // Create order
+      console.log("📝 Creating order...");
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
@@ -92,8 +103,14 @@ function CheckoutPage() {
         })
         .select()
         .single();
-      if (orderErr) throw orderErr;
+      
+      if (orderErr) {
+        console.error("❌ Order creation error:", orderErr);
+        throw orderErr;
+      }
+      console.log("✅ Order created:", order?.id);
 
+      // Insert order items
       const itemsPayload = items.map((i) => ({
         order_id: order.id,
         product_id: idBySlug.get(i.product.slug) ?? null,
@@ -103,14 +120,24 @@ function CheckoutPage() {
         quantity: i.quantity,
         unit_price: i.product.price,
       }));
+      
+      console.log("📋 Inserting order items:", itemsPayload.length);
       const { error: itemsErr } = await supabase.from("order_items").insert(itemsPayload);
-      if (itemsErr) throw itemsErr;
+      
+      if (itemsErr) {
+        console.error("❌ Order items error:", itemsErr);
+        throw itemsErr;
+      }
+      console.log("✅ Order items inserted successfully");
 
       clear();
       toast.success("Order placed. Thank you.");
+      console.log("🎉 Order completed successfully");
       navigate({ to: "/" });
     } catch (err) {
+      console.error("💥 Full error object:", err);
       const message = err instanceof Error ? err.message : "Could not place order";
+      console.error("🚨 Final error message:", message);
       toast.error(message);
     } finally {
       setSaving(false);
