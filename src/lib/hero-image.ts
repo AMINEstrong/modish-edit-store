@@ -1,17 +1,26 @@
-/** Minimum display widths (CSS px) — below this, heroes look soft on large/Retina screens. */
+/** Default hero dimensions (full-width backgrounds). */
+export const HERO_SIZE = {
+  banner: { width: 1920, height: 1080, targetWidth: 1920 },
+  homme: { width: 1920, height: 1080, targetWidth: 1920 },
+  femme: { width: 1920, height: 1080, targetWidth: 1920 },
+  /** Split category cards (portrait 3:4 crop). */
+  femmeCard: { width: 1920, height: 2560, targetWidth: 1920 },
+} as const;
+
+export type HeroVariant = keyof typeof HERO_SIZE;
+
 export const HERO_MIN_WIDTH = {
-  banner: 1920,
-  landscape: 1920,
-  portrait: 1200,
+  banner: HERO_SIZE.banner.width,
+  landscape: HERO_SIZE.homme.width,
+  portrait: HERO_SIZE.femmeCard.width,
 } as const;
 
 /**
  * Supabase Storage: serve via image renderer at high quality (downscale only).
- * Leaves non-Supabase URLs unchanged.
  */
 export function resolveHeroImageUrl(
   src: string,
-  targetWidth: number = 2560,
+  targetWidth: number = HERO_SIZE.banner.targetWidth,
 ): string {
   if (!src || src.startsWith("data:") || src.startsWith("blob:")) return src;
 
@@ -31,19 +40,6 @@ export function resolveHeroImageUrl(
   } catch {
     return src;
   }
-}
-
-export function buildSrcSet(
-  src: string,
-  src2x?: string,
-  targetWidth2x: number = 2560,
-): string | undefined {
-  const oneX = resolveHeroImageUrl(src, Math.round(targetWidth2x / 2));
-  if (!src2x) return undefined;
-  const twoX =
-    src2x === src ? resolveHeroImageUrl(src, targetWidth2x) : resolveHeroImageUrl(src2x, targetWidth2x);
-  if (oneX === twoX) return undefined;
-  return `${oneX} 1x, ${twoX} 2x`;
 }
 
 export async function readImageDimensions(
@@ -71,7 +67,7 @@ export function heroDimensionWarning(
 ): string | null {
   const min = HERO_MIN_WIDTH[kind];
   if (dims.width < min) {
-    return `Image ${dims.width}×${dims.height} px — pour un fond net, utilisez au moins ${min}px de largeur (idéal 2560px).`;
+    return `Image ${dims.width}×${dims.height} px — pour un fond net, utilisez au moins ${min}×${HERO_SIZE.banner.height} px.`;
   }
   return null;
 }

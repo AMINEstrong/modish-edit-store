@@ -2,9 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import hero from "@/assets/hero-femme.jpg";
-import hero2x from "@/assets/hero-femme@2x.jpg";
 import { HeroImage } from "@/components/HeroImage";
-import { buildSrcSet } from "@/lib/hero-image";
+import { HERO_SIZE } from "@/lib/hero-image";
 import { CategoryTabs } from "@/components/CategoryTabs";
 import { ProductCard } from "@/components/ProductCard";
 import { Filters, type FilterState } from "@/components/Filters";
@@ -48,16 +47,11 @@ function FemmePage() {
       <section className="relative h-[55vh] overflow-hidden">
         <HeroImage
           src={settings?.hero_femme_url || hero}
-          srcSet={
-            settings?.hero_femme_url
-              ? undefined
-              : buildSrcSet(hero, hero2x, 1536)
-          }
           alt="Femme collection"
           sizes="100vw"
-          width={1536}
-          height={2730}
-          targetWidth={1536}
+          width={HERO_SIZE.femme.width}
+          height={HERO_SIZE.femme.height}
+          targetWidth={HERO_SIZE.femme.targetWidth}
           priority
         />
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-foreground/10 text-background">

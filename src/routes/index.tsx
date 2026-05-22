@@ -2,14 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import hommeImg from "@/assets/hero-homme.jpg";
-import hommeImg2x from "@/assets/hero-homme@2x.jpg";
 import femmeImg from "@/assets/hero-femme.jpg";
-import femmeImg2x from "@/assets/hero-femme@2x.jpg";
 import bannerImg from "@/assets/hero-banner.jpg";
-import bannerImg2x from "@/assets/hero-banner@2x.jpg";
 import { HeroImage } from "@/components/HeroImage";
 import { CategoryTabs } from "@/components/CategoryTabs";
-import { buildSrcSet } from "@/lib/hero-image";
+import { HERO_SIZE } from "@/lib/hero-image";
 import { ProductCard } from "@/components/ProductCard";
 import { useProducts } from "@/hooks/use-products";
 import { fetchSettings } from "@/lib/settings";
@@ -49,14 +46,10 @@ function Home() {
       <section className="relative">
         <HeroImage
           src={finalBanner}
-          srcSet={
-            settings?.hero_banner_url
-              ? undefined
-              : buildSrcSet(bannerImg, bannerImg2x)
-          }
           alt="Slistyle Autumn Winter campaign"
-          width={2560}
-          height={1440}
+          width={HERO_SIZE.banner.width}
+          height={HERO_SIZE.banner.height}
+          targetWidth={HERO_SIZE.banner.targetWidth}
           className="h-[80vh] w-full"
           sizes="100vw"
           priority
@@ -109,20 +102,14 @@ function Home() {
               img: finalHomme,
               label: "Homme",
               subtitle: "Tailored essentials",
-              srcSet: settings?.hero_homme_url
-                ? undefined
-                : buildSrcSet(hommeImg, hommeImg2x),
-              targetWidth: 2560,
+              spec: HERO_SIZE.homme,
             },
             {
               to: "/femme" as const,
               img: finalFemme,
               label: "Femme",
               subtitle: "Fluid silhouettes",
-              srcSet: settings?.hero_femme_url
-                ? undefined
-                : buildSrcSet(femmeImg, femmeImg2x, 1536),
-              targetWidth: 1536,
+              spec: HERO_SIZE.femmeCard,
             },
           ].map((c, i) => (
             <motion.div
@@ -136,10 +123,11 @@ function Home() {
                 <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
                   <HeroImage
                     src={c.img}
-                    srcSet={c.srcSet}
                     alt={c.label}
+                    width={c.spec.width}
+                    height={c.spec.height}
+                    targetWidth={c.spec.targetWidth}
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    targetWidth={c.targetWidth}
                     className="transition-transform duration-1000 ease-out group-hover:scale-[1.02]"
                   />
                   <div className="absolute bottom-8 left-8 text-background">
