@@ -4,7 +4,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { canAttemptAuth, recordAuthAttempt, getRemainingWaitTime } from "@/lib/auth-rate-limit";
-import { signUpUserFn } from "@/lib/server-functions";
+import { signUpUser } from "@/lib/api";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -60,12 +60,10 @@ function AuthPage() {
         const n1 = nameSchema.safeParse(fullName);
         if (!n1.success) return toast.error("Please enter your name");
         
-        const result = await signUpUserFn({
-          data: {
-            email: e1.data,
-            password: p1.data,
-            fullName: n1.data,
-          }
+        const result = await signUpUser({
+          email: e1.data,
+          password: p1.data,
+          fullName: n1.data,
         });
 
         if (!result.success) {

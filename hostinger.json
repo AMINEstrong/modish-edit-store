@@ -1,6 +1,5 @@
 {
-  "_comment": "Reference values for hPanel → Websites → Node.js (not an auto-loaded Hostinger API file).",
-  "name": "modish-edit-store",
+  "_comment": "hPanel → Node.js Web App reference settings",
   "framework": "other",
   "nodeVersion": "22",
   "build": {
@@ -10,7 +9,7 @@
   },
   "run": {
     "startCommand": "npm start",
-    "entryFile": "dist/server/index.mjs",
+    "entryFile": "index.mjs",
     "port": 3000
   }
 }

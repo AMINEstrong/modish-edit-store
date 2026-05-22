@@ -1,0 +1,34 @@
+# Hostinger / Apache — SPA + static assets (use with dist/ contents in public_html)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # API routes go to Node when using reverse proxy; skip rewrite for /api
+  RewriteCond %{REQUEST_URI} ^/api/ [NC]
+  RewriteRule ^ - [L]
+
+  # Serve existing files and directories
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # SPA fallback — all routes → index.html (TanStack Router client-side)
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+Options -Indexes +FollowSymLinks
+
+<IfModule mod_authz_core.c>
+  Require all granted
+</IfModule>
+
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Allow from all
+</IfModule>
+
+# MIME types for Vite assets
+<IfModule mod_mime.c>
+  AddType application/javascript js mjs
+  AddType text/css css
+</IfModule>

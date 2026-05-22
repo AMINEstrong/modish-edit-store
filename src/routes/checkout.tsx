@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/lib/store";
 import { formatPrice, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/format";
 import { toast } from "sonner";
-import { placeOrderFn } from "@/lib/server-functions";
+import { placeOrder } from "@/lib/api";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -80,20 +80,18 @@ function CheckoutPage() {
     try {
       console.log("📦 Starting order submission on server...", { user_id: user?.id ?? null, form: parsed.data });
 
-      const orderResult = await placeOrderFn({
-        data: {
-          userId: user?.id ?? null,
-          orderData: parsed.data,
-          items: items.map((i) => ({
-            productSlug: i.product.slug,
-            productName: i.product.name,
-            size: i.size,
-            color: i.color,
-            quantity: i.quantity,
-            unitPrice: i.product.price,
-          })),
-          total: grand,
-        }
+      const orderResult = await placeOrder({
+        userId: user?.id ?? null,
+        orderData: parsed.data,
+        items: items.map((i) => ({
+          productSlug: i.product.slug,
+          productName: i.product.name,
+          size: i.size,
+          color: i.color,
+          quantity: i.quantity,
+          unitPrice: i.product.price,
+        })),
+        total: grand,
       });
 
       if (!orderResult.success) {
