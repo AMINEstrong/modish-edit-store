@@ -32,6 +32,7 @@ export async function placeOrder(data: {
     city: string;
     postal_code: string;
     country: string;
+    payment_method: string;
   };
   items: Array<{
     productSlug: string;

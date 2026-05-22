@@ -4,9 +4,11 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/lib/store";
-import { formatPrice, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/format";
+import { resolveLineOptions } from "@/lib/cart-line";
+import { formatColorLabel, formatPrice, formatSizeLabel, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/format";
 import { toast } from "sonner";
 import { placeOrder } from "@/lib/api";
+import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/payment";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -27,6 +29,7 @@ const schema = z.object({
   city: z.string().trim().min(1).max(100),
   postal_code: z.string().trim().min(1).max(20),
   country: z.string().trim().min(1).max(100),
+  payment_method: z.enum(["cash_on_delivery"]),
 });
 
 function CheckoutPage() {
@@ -43,6 +46,7 @@ function CheckoutPage() {
     city: "", 
     postal_code: "", 
     country: "Maroc",
+    payment_method: "cash_on_delivery" as PaymentMethod,
   });
   const [saving, setSaving] = useState(false);
 
@@ -83,14 +87,17 @@ function CheckoutPage() {
       const orderResult = await placeOrder({
         userId: user?.id ?? null,
         orderData: parsed.data,
-        items: items.map((i) => ({
-          productSlug: i.product.slug,
-          productName: i.product.name,
-          size: i.size,
-          color: i.color,
-          quantity: i.quantity,
-          unitPrice: i.product.price,
-        })),
+        items: items.map((i) => {
+          const line = resolveLineOptions(i.product, i.size, i.color);
+          return {
+            productSlug: i.product.slug,
+            productName: i.product.name,
+            size: line.size,
+            color: line.color,
+            quantity: i.quantity,
+            unitPrice: i.product.price,
+          };
+        }),
         total: grand,
       });
 
@@ -147,6 +154,30 @@ function CheckoutPage() {
             <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input" />
           </Field>
 
+          <h2 className="label-eyebrow pt-4">Payment</h2>
+          <Field label="Payment method">
+            <select
+              required
+              value={form.payment_method}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  payment_method: e.target.value as PaymentMethod,
+                })
+              }
+              className="input"
+            >
+              {PAYMENT_METHODS.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <p className="text-xs text-muted-foreground">
+            Pay in cash when your order is delivered.
+          </p>
+
           <button
             type="submit"
             disabled={saving}
@@ -154,9 +185,6 @@ function CheckoutPage() {
           >
             {saving ? "Placing order…" : `Place order — ${formatPrice(grand)}`}
           </button>
-          <p className="text-center text-xs text-muted-foreground">
-            Payment will be collected upon shipment. Card payment coming next.
-          </p>
         </form>
 
         <aside className="h-fit border border-border p-6">
@@ -166,7 +194,9 @@ function CheckoutPage() {
               <li key={`${i.productId}-${i.size}-${i.color}`} className="flex justify-between gap-3">
                 <span className="flex-1">
                   {i.quantity}× {i.product.name}
-                  <span className="block text-xs text-muted-foreground">Size {i.size}</span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    Taille {formatSizeLabel(i.size)} · Couleur {formatColorLabel(i.color)}
+                  </span>
                 </span>
                 <span>{formatPrice(i.product.price * i.quantity)}</span>
               </li>

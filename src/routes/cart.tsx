@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, X } from "lucide-react";
 import { useCart } from "@/lib/store";
-import { formatPrice, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/format";
+import { formatColorLabel, formatPrice, formatSizeLabel, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/format";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -72,11 +72,17 @@ function CartPage() {
                     >
                       {item.product.name}
                     </Link>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Size {item.size} · <span
-                        className="inline-block h-2 w-2 align-middle rounded-full"
-                        style={{ backgroundColor: item.color }}
-                      />
+                    <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                      <span>Taille {formatSizeLabel(item.size)}</span>
+                      <span>·</span>
+                      <span className="inline-flex items-center gap-1.5">
+                        Couleur {formatColorLabel(item.color)}
+                        <span
+                          className="inline-block h-3 w-3 shrink-0 rounded-full border border-border"
+                          style={{ backgroundColor: item.color }}
+                          title={item.color}
+                        />
+                      </span>
                     </p>
                   </div>
                   <p className="text-sm">

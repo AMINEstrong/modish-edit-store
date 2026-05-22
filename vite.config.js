@@ -5,6 +5,7 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { apiDevPlugin } from "./server/vite-api-plugin.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -20,6 +21,7 @@ export default defineConfig(({ mode }) => {
     base: process.env.VITE_BASE_PATH || "/",
     define: envDefine,
     plugins: [
+      apiDevPlugin(),
       tanstackRouter({
         routesDirectory: "./src/routes",
         generatedRouteTree: "./src/routeTree.gen.ts",
@@ -49,12 +51,6 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "::",
       port: 8080,
-      proxy: {
-        "/api": {
-          target: "http://127.0.0.1:3000",
-          changeOrigin: true,
-        },
-      },
     },
   };
 });

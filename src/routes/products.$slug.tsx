@@ -5,7 +5,9 @@ import { Heart, Minus, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { fetchProductBySlug, fetchProducts } from "@/lib/products";
 import { useCart, useWishlist } from "@/lib/store";
+import { resolveLineOptions } from "@/lib/cart-line";
 import { formatPrice, FREE_SHIPPING_THRESHOLD } from "@/lib/format";
+import { toast } from "sonner";
 import { ProductCard } from "@/components/ProductCard";
 
 export const Route = createFileRoute("/products/$slug")({
@@ -43,8 +45,8 @@ export const Route = createFileRoute("/products/$slug")({
 
 function ProductPage() {
   const { product, related } = Route.useLoaderData();
-  const [size, setSize] = useState(product.sizes[0]);
-  const [color, setColor] = useState(product.colors[0]);
+  const [size, setSize] = useState(product.sizes[0] ?? "");
+  const [color, setColor] = useState(product.colors[0] ?? "");
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 
@@ -217,7 +219,22 @@ function ProductPage() {
           <div className="mt-8 flex gap-3">
             <button
               onClick={() => {
-                add({ productId: product.id, size, color, quantity: qty, product });
+                if (product.sizes.length > 0 && !size) {
+                  toast.error("Choisissez une taille.");
+                  return;
+                }
+                if (product.colors.length > 0 && !color) {
+                  toast.error("Choisissez une couleur.");
+                  return;
+                }
+                const line = resolveLineOptions(product, size, color);
+                add({
+                  productId: product.id,
+                  size: line.size,
+                  color: line.color,
+                  quantity: qty,
+                  product,
+                });
                 setAdded(true);
                 setTimeout(() => setAdded(false), 1800);
               }}

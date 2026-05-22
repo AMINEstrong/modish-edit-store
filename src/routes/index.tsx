@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useMemo, useState } from "react";
 import hommeImg from "@/assets/hero-homme.jpg";
 import femmeImg from "@/assets/hero-femme.jpg";
 import bannerImg from "@/assets/hero-banner.jpg";
+import { CategoryTabs } from "@/components/CategoryTabs";
 import { ProductCard } from "@/components/ProductCard";
 import { useProducts } from "@/hooks/use-products";
 import { fetchSettings } from "@/lib/settings";
@@ -23,7 +25,14 @@ export const Route = createFileRoute("/")({
 function Home() {
   const settings = Route.useLoaderData();
   const { data: products = [], isLoading } = useProducts();
-  const featured = products.slice(0, 5);
+  const [category, setCategory] = useState<string | null>(null);
+
+  const displayed = useMemo(() => {
+    const list = category
+      ? products.filter((p) => p.category === category)
+      : products;
+    return list;
+  }, [products, category]);
 
   const finalBanner = settings?.hero_banner_url || bannerImg;
   const finalHomme = settings?.hero_homme_url || hommeImg;
@@ -117,20 +126,23 @@ function Home() {
 
       {/* Featured products */}
       <section className="mx-auto max-w-7xl px-6 pb-24">
-        <div className="mb-10 flex items-baseline justify-between">
-          <div>
-            <p className="label-eyebrow text-muted-foreground">The Edit</p>
-            <h2 className="mt-2 font-serif text-4xl">New arrivals</h2>
-          </div>
-          <Link to="/femme" className="label-eyebrow underline underline-offset-4">
-            View all
-          </Link>
+        <div className="mb-6">
+          <p className="label-eyebrow text-muted-foreground">The Edit</p>
+          <h2 className="mt-2 font-serif text-4xl">New arrivals</h2>
         </div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-5">
+        <CategoryTabs active={category} onChange={setCategory} className="mb-10" />
+        <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {isLoading ? (
             <p className="col-span-full py-12 text-center text-sm text-muted-foreground">Loading…</p>
+          ) : displayed.length === 0 ? (
+            <p className="col-span-full py-12 text-center text-sm text-muted-foreground">
+              No pieces in this category yet.{" "}
+              <Link to="/homme" className="underline underline-offset-4">
+                Browse collections
+              </Link>
+            </p>
           ) : (
-            featured.map((p, i) => (
+            displayed.map((p, i) => (
               <ProductCard key={p.id} product={p} index={i} />
             ))
           )}

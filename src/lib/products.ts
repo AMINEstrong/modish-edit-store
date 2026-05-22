@@ -42,7 +42,15 @@ type ProductRow = {
   stock: number;
 };
 
+/** Category values stored in Supabase — use these in admin when tagging products. */
+export const CATEGORY_SHORTS = "Shorts";
+export const CATEGORY_CHEMISE = "Chemise";
+
+export type CategoryTab = { label: string; value: string | null };
+
 export const HOMME_CATEGORIES = [
+  CATEGORY_CHEMISE,
+  CATEGORY_SHORTS,
   "T-shirts",
   "Hoodies",
   "Jackets",
@@ -52,6 +60,8 @@ export const HOMME_CATEGORIES = [
 ] as const;
 
 export const FEMME_CATEGORIES = [
+  CATEGORY_CHEMISE,
+  CATEGORY_SHORTS,
   "Dresses",
   "Tops",
   "Skirts",
@@ -60,6 +70,24 @@ export const FEMME_CATEGORIES = [
   "Bags",
   "Accessories",
 ] as const;
+
+/** All unique categories (homme + femme), stable order. */
+export const ALL_SHOP_CATEGORIES = [
+  ...new Set([...HOMME_CATEGORIES, ...FEMME_CATEGORIES]),
+] as const;
+
+export function buildCategoryTabs(
+  categories: readonly string[],
+): CategoryTab[] {
+  return [
+    { label: "View all", value: null },
+    ...categories.map((c) => ({ label: c, value: c })),
+  ];
+}
+
+export const SHOP_CATEGORY_TABS = buildCategoryTabs(ALL_SHOP_CATEGORIES);
+export const HOMME_CATEGORY_TABS = buildCategoryTabs(HOMME_CATEGORIES);
+export const FEMME_CATEGORY_TABS = buildCategoryTabs(FEMME_CATEGORIES);
 
 const SLUG_IMAGES: Record<string, string> = {
   "essential-cotton-tee": tshirt,

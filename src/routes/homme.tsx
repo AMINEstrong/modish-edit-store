@@ -2,10 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import hero from "@/assets/hero-homme.jpg";
+import { CategoryTabs } from "@/components/CategoryTabs";
 import { ProductCard } from "@/components/ProductCard";
 import { Filters, type FilterState } from "@/components/Filters";
 import { useProducts } from "@/hooks/use-products";
-import { HOMME_CATEGORIES } from "@/lib/products";
+import { HOMME_CATEGORIES, HOMME_CATEGORY_TABS } from "@/lib/products";
 import { fetchSettings } from "@/lib/settings";
 
 export const Route = createFileRoute("/homme")({
@@ -78,6 +79,12 @@ function HommePage() {
             categories={HOMME_CATEGORIES}
           />
           <div>
+            <CategoryTabs
+              tabs={HOMME_CATEGORY_TABS}
+              active={filter.category}
+              onChange={(category) => setFilter({ ...filter, category })}
+              className="mb-8"
+            />
             <p className="label-eyebrow mb-6 text-muted-foreground">
               {filtered.length} {filtered.length === 1 ? "piece" : "pieces"}
             </p>
