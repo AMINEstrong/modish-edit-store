@@ -47,6 +47,7 @@ export default defineConfig(({ mode }) => {
       outDir: "dist",
       emptyOutDir: true,
       assetsDir: "assets",
+      assetsInlineLimit: 0,
     },
     server: {
       host: "::",

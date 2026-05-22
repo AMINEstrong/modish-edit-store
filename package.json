@@ -9,7 +9,8 @@
     "start": "node index.mjs",
     "preview": "npm run build && node index.mjs",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "optimize:heroes": "node scripts/optimize-hero-images.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
@@ -84,6 +85,7 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
     "prettier": "^3.7.3",
+    "sharp": "^0.34.5",
     "supabase": "^2.99.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",

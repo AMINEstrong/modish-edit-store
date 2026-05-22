@@ -2,6 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import hero from "@/assets/hero-homme.jpg";
+import hero2x from "@/assets/hero-homme@2x.jpg";
+import { HeroImage } from "@/components/HeroImage";
+import { buildSrcSet } from "@/lib/hero-image";
 import { CategoryTabs } from "@/components/CategoryTabs";
 import { ProductCard } from "@/components/ProductCard";
 import { Filters, type FilterState } from "@/components/Filters";
@@ -43,12 +46,18 @@ function HommePage() {
   return (
     <>
       <section className="relative h-[55vh] overflow-hidden">
-        <img 
-          src={settings?.hero_homme_url || hero}  
-          alt="Homme collection" 
-          className="h-full w-full object-cover" 
-          fetchPriority="high" 
-          decoding="async" 
+        <HeroImage
+          src={settings?.hero_homme_url || hero}
+          srcSet={
+            settings?.hero_homme_url
+              ? undefined
+              : buildSrcSet(hero, hero2x)
+          }
+          alt="Homme collection"
+          sizes="100vw"
+          width={2560}
+          height={1440}
+          priority
         />
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-foreground/10 text-background">
           <motion.p

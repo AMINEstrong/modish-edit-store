@@ -3,6 +3,11 @@ import { useEffect, useState } from "react";
 import { fetchSettings, updateSettings, type SiteSettings } from "@/lib/settings";
 import { toast } from "sonner";
 import { uploadProductImage } from "@/lib/product-images";
+import {
+  heroDimensionWarning,
+  readImageDimensions,
+  resolveHeroImageUrl,
+} from "@/lib/hero-image";
 import { Trash } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
@@ -24,10 +29,19 @@ function AdminSettings() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleUpload = async (file: File | null, key: keyof SiteSettings, label: string) => {
+  const handleUpload = async (
+    file: File | null,
+    key: keyof SiteSettings,
+    label: string,
+    kind: "banner" | "landscape" | "portrait",
+  ) => {
     if (!file) return;
     setSaving(true);
     try {
+      const dims = await readImageDimensions(file);
+      const warn = heroDimensionWarning(file, dims, kind);
+      if (warn) toast.warning(warn);
+
       const url = await uploadProductImage(file, `site-settings-${key}`);
       const newSettings = { ...settings, [key]: url };
       await updateSettings(newSettings);
@@ -60,15 +74,15 @@ function AdminSettings() {
     <div className="mx-auto max-w-4xl py-12">
       <h1 className="mb-8 font-serif text-3xl">Paramètres du site</h1>
       <p className="mb-12 text-muted-foreground">
-        Gérez les grandes images d'arrière-plan du site. Pour un rendu optimal, privilégiez des images haute qualité adaptées aux dimensions.
+        Gérez les grandes images d&apos;arrière-plan. Pour un rendu net sur grand écran : bannière accueil / homme ≥ 2560×1440 px, femme ≥ 1536×2300 px (JPEG qualité élevée).
       </p>
 
       <div className="space-y-12">
         <SettingImage
           label="Bannière Accueil (Hero Banner)"
-          description="Format recommandé: Paysage (ex: 1920x1080). Poids max: 5 Mo."
+          description="Paysage 2560×1440 px minimum (idéal). Poids max : 5 Mo."
           imageUrl={settings.hero_banner_url}
-          onUpload={(f) => handleUpload(f, "hero_banner_url", "Bannière Accueil")}
+          onUpload={(f) => handleUpload(f, "hero_banner_url", "Bannière Accueil", "banner")}
           onDelete={() => handleDelete("hero_banner_url", "Bannière Accueil")}
           saving={saving}
           aspect="aspect-[16/9]"
@@ -76,9 +90,9 @@ function AdminSettings() {
 
         <SettingImage
           label="Bannière Collection Homme"
-          description="Format recommandé: Portrait (ex: 800x1200). Poids max: 5 Mo."
+          description="Paysage 2560×1440 px minimum. Poids max : 5 Mo."
           imageUrl={settings.hero_homme_url}
-          onUpload={(f) => handleUpload(f, "hero_homme_url", "Bannière Homme")}
+          onUpload={(f) => handleUpload(f, "hero_homme_url", "Bannière Homme", "landscape")}
           onDelete={() => handleDelete("hero_homme_url", "Bannière Homme")}
           saving={saving}
           aspect="aspect-[3/4] md:max-w-md"
@@ -86,9 +100,9 @@ function AdminSettings() {
 
         <SettingImage
           label="Bannière Collection Femme"
-          description="Format recommandé: Portrait (ex: 800x1200). Poids max: 5 Mo."
+          description="Portrait 1536×2300 px minimum. Poids max : 5 Mo."
           imageUrl={settings.hero_femme_url}
-          onUpload={(f) => handleUpload(f, "hero_femme_url", "Bannière Femme")}
+          onUpload={(f) => handleUpload(f, "hero_femme_url", "Bannière Femme", "portrait")}
           onDelete={() => handleDelete("hero_femme_url", "Bannière Femme")}
           saving={saving}
           aspect="aspect-[3/4] md:max-w-md"
@@ -123,7 +137,11 @@ function SettingImage({
       <div className="flex flex-col gap-6 md:flex-row md:items-start">
         <div className={`w-full overflow-hidden bg-secondary ${aspect} border border-border`}>
           {imageUrl ? (
-            <img src={imageUrl} alt={label} className="h-full w-full object-cover" />
+            <img
+              src={resolveHeroImageUrl(imageUrl, 2560)}
+              alt={label}
+              className="h-full w-full object-cover object-center"
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground text-center p-4">
               Image par défaut<br />(ou aucune image)

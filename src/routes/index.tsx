@@ -2,9 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import hommeImg from "@/assets/hero-homme.jpg";
+import hommeImg2x from "@/assets/hero-homme@2x.jpg";
 import femmeImg from "@/assets/hero-femme.jpg";
+import femmeImg2x from "@/assets/hero-femme@2x.jpg";
 import bannerImg from "@/assets/hero-banner.jpg";
+import bannerImg2x from "@/assets/hero-banner@2x.jpg";
+import { HeroImage } from "@/components/HeroImage";
 import { CategoryTabs } from "@/components/CategoryTabs";
+import { buildSrcSet } from "@/lib/hero-image";
 import { ProductCard } from "@/components/ProductCard";
 import { useProducts } from "@/hooks/use-products";
 import { fetchSettings } from "@/lib/settings";
@@ -42,14 +47,19 @@ function Home() {
     <>
       {/* Hero */}
       <section className="relative">
-        <img
+        <HeroImage
           src={finalBanner}
+          srcSet={
+            settings?.hero_banner_url
+              ? undefined
+              : buildSrcSet(bannerImg, bannerImg2x)
+          }
           alt="Slistyle Autumn Winter campaign"
-          width={1920}
-          height={1080}
-          className="h-[80vh] w-full object-cover"
-          fetchPriority="high"
-          decoding="async"
+          width={2560}
+          height={1440}
+          className="h-[80vh] w-full"
+          sizes="100vw"
+          priority
         />
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-16 text-center">
           <motion.p
@@ -94,8 +104,26 @@ function Home() {
       <section className="mx-auto max-w-7xl px-6 py-20">
         <div className="grid gap-6 md:grid-cols-2">
           {[
-            { to: "/homme" as const, img: finalHomme, label: "Homme", subtitle: "Tailored essentials" },
-            { to: "/femme" as const, img: finalFemme, label: "Femme", subtitle: "Fluid silhouettes" },
+            {
+              to: "/homme" as const,
+              img: finalHomme,
+              label: "Homme",
+              subtitle: "Tailored essentials",
+              srcSet: settings?.hero_homme_url
+                ? undefined
+                : buildSrcSet(hommeImg, hommeImg2x),
+              targetWidth: 2560,
+            },
+            {
+              to: "/femme" as const,
+              img: finalFemme,
+              label: "Femme",
+              subtitle: "Fluid silhouettes",
+              srcSet: settings?.hero_femme_url
+                ? undefined
+                : buildSrcSet(femmeImg, femmeImg2x, 1536),
+              targetWidth: 1536,
+            },
           ].map((c, i) => (
             <motion.div
               key={c.label}
@@ -106,12 +134,13 @@ function Home() {
             >
               <Link to={c.to} className="group block">
                 <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
-                  <img
+                  <HeroImage
                     src={c.img}
+                    srcSet={c.srcSet}
                     alt={c.label}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    targetWidth={c.targetWidth}
+                    className="transition-transform duration-1000 ease-out group-hover:scale-[1.02]"
                   />
                   <div className="absolute bottom-8 left-8 text-background">
                     <p className="label-eyebrow">{c.subtitle}</p>
