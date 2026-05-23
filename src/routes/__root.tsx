@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+import { AddedToBagToast } from "@/components/AddedToBagToast";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
@@ -88,6 +89,7 @@ function RootComponent() {
         </main>
         <Footer />
       </div>
+      <AddedToBagToast />
       <Toaster position="top-center" />
     </>
   );

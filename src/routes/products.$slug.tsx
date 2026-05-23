@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { Heart, Minus, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { fetchProductBySlug, fetchProducts } from "@/lib/products";
-import { useCart, useWishlist } from "@/lib/store";
+import { addToBag } from "@/lib/add-to-bag";
+import { useWishlist } from "@/lib/store";
 import { resolveLineOptions } from "@/lib/cart-line";
 import { formatPrice, FREE_SHIPPING_THRESHOLD } from "@/lib/format";
 import { toast } from "sonner";
@@ -48,9 +49,6 @@ function ProductPage() {
   const [size, setSize] = useState(product.sizes[0] ?? "");
   const [color, setColor] = useState(product.colors[0] ?? "");
   const [qty, setQty] = useState(1);
-  const [added, setAdded] = useState(false);
-
-  const add = useCart((s) => s.add);
   const toggleWish = useWishlist((s) => s.toggle);
   const inWish = useWishlist((s) => s.ids.includes(product.id));
 
@@ -228,19 +226,17 @@ function ProductPage() {
                   return;
                 }
                 const line = resolveLineOptions(product, size, color);
-                add({
+                addToBag({
                   productId: product.id,
                   size: line.size,
                   color: line.color,
                   quantity: qty,
                   product,
                 });
-                setAdded(true);
-                setTimeout(() => setAdded(false), 1800);
               }}
-              className="label-eyebrow flex-1 bg-foreground py-4 text-background transition hover:opacity-90"
+              className="label-eyebrow flex-1 bg-foreground py-4 text-background transition-all duration-300 hover:bg-gold hover:text-ink"
             >
-              {added ? "Added to bag" : "Add to bag"}
+              Add to bag
             </button>
             <button
               onClick={() => toggleWish(product.id)}

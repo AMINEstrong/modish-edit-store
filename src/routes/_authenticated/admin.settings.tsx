@@ -74,13 +74,13 @@ function AdminSettings() {
     <div className="mx-auto max-w-4xl py-12">
       <h1 className="mb-8 font-serif text-3xl">Paramètres du site</h1>
       <p className="mb-12 text-muted-foreground">
-        Gérez les grandes images d&apos;arrière-plan. Format par défaut : 1920×1080 px (paysage) pour l&apos;accueil et homme ; femme en portrait ≥ 1920 px de large.
+        Gérez les bannières d&apos;arrière-plan. Format 4K recommandé : 3840×2160 px (16:9) pour accueil, homme et femme.
       </p>
 
       <div className="space-y-12">
         <SettingImage
           label="Bannière Accueil (Hero Banner)"
-          description="Paysage 1920×1080 px (défaut). Poids max : 5 Mo."
+          description="4K : 3840×2160 px (16:9). Poids max : 5 Mo."
           imageUrl={settings.hero_banner_url}
           onUpload={(f) => handleUpload(f, "hero_banner_url", "Bannière Accueil", "banner")}
           onDelete={() => handleDelete("hero_banner_url", "Bannière Accueil")}
@@ -90,7 +90,7 @@ function AdminSettings() {
 
         <SettingImage
           label="Bannière Collection Homme"
-          description="Paysage 1920×1080 px (défaut). Poids max : 5 Mo."
+          description="4K : 3840×2160 px (16:9). Poids max : 5 Mo."
           imageUrl={settings.hero_homme_url}
           onUpload={(f) => handleUpload(f, "hero_homme_url", "Bannière Homme", "landscape")}
           onDelete={() => handleDelete("hero_homme_url", "Bannière Homme")}
@@ -100,7 +100,7 @@ function AdminSettings() {
 
         <SettingImage
           label="Bannière Collection Femme"
-          description="Portrait ou paysage 1920 px de large minimum (ex. 1920×1080). Poids max : 5 Mo."
+          description="4K : 3840×2160 px (16:9). Poids max : 5 Mo."
           imageUrl={settings.hero_femme_url}
           onUpload={(f) => handleUpload(f, "hero_femme_url", "Bannière Femme", "portrait")}
           onDelete={() => handleDelete("hero_femme_url", "Bannière Femme")}
@@ -138,7 +138,7 @@ function SettingImage({
         <div className={`w-full overflow-hidden bg-secondary ${aspect} border border-border`}>
           {imageUrl ? (
             <img
-              src={resolveHeroImageUrl(imageUrl, 1920)}
+              src={resolveHeroImageUrl(imageUrl, 3840)}
               alt={label}
               className="h-full w-full object-cover object-center"
             />

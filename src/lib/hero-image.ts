@@ -1,18 +1,17 @@
-/** Default hero dimensions (full-width backgrounds). */
+/** 4K-ready hero dimensions (16:9). */
 export const HERO_SIZE = {
-  banner: { width: 1920, height: 1080, targetWidth: 1920 },
-  homme: { width: 1920, height: 1080, targetWidth: 1920 },
-  femme: { width: 1920, height: 1080, targetWidth: 1920 },
-  /** Split category cards (portrait 3:4 crop). */
-  femmeCard: { width: 1920, height: 2560, targetWidth: 1920 },
+  banner: { width: 3840, height: 2160, targetWidth: 3840 },
+  homme: { width: 3840, height: 2160, targetWidth: 3840 },
+  femme: { width: 3840, height: 2160, targetWidth: 3840 },
+  femmeCard: { width: 3840, height: 5120, targetWidth: 3840 },
 } as const;
 
 export type HeroVariant = keyof typeof HERO_SIZE;
 
 export const HERO_MIN_WIDTH = {
-  banner: HERO_SIZE.banner.width,
-  landscape: HERO_SIZE.homme.width,
-  portrait: HERO_SIZE.femmeCard.width,
+  banner: 1920,
+  landscape: 1920,
+  portrait: 1920,
 } as const;
 
 /**
@@ -35,7 +34,7 @@ export function resolveHeroImageUrl(
     );
     url.search = "";
     url.searchParams.set("width", String(targetWidth));
-    url.searchParams.set("quality", "92");
+    url.searchParams.set("quality", "90");
     return url.toString();
   } catch {
     return src;
@@ -67,7 +66,7 @@ export function heroDimensionWarning(
 ): string | null {
   const min = HERO_MIN_WIDTH[kind];
   if (dims.width < min) {
-    return `Image ${dims.width}×${dims.height} px — pour un fond net, utilisez au moins ${min}×${HERO_SIZE.banner.height} px.`;
+    return `Image ${dims.width}×${dims.height} px — idéal 3840×2160 px (4K) ou minimum ${min}px de large.`;
   }
   return null;
 }

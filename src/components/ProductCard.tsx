@@ -4,6 +4,7 @@ import { Heart } from "lucide-react";
 import type { Product } from "@/lib/products";
 import { useWishlist } from "@/lib/store";
 import { formatPrice } from "@/lib/format";
+import { defaultTransition, fadeInUp } from "@/lib/motion";
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
   const has = useWishlist((s) => s.ids.includes(product.id));
@@ -11,44 +12,41 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-40px" }}
+      variants={fadeInUp}
+      transition={{ ...defaultTransition, delay: (index % 10) * 0.05 }}
       className="group"
     >
-      <Link
-        to="/products/$slug"
-        params={{ slug: product.slug }}
-        className="block"
-      >
+      <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
         <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
           <img
             src={product.image}
             alt={product.name}
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            className="image-hover-zoom h-full w-full object-cover"
           />
+          <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/10" />
           <button
+            type="button"
             onClick={(e) => {
               e.preventDefault();
               toggle(product.id);
             }}
-            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/80 backdrop-blur transition hover:bg-background"
+            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md transition-all duration-300 hover:border-gold hover:bg-black/60"
             aria-label="Add to wishlist"
           >
-            <Heart
-              className={`h-4 w-4 ${has ? "fill-foreground" : ""}`}
-            />
+            <Heart className={`h-4 w-4 transition-colors ${has ? "fill-gold text-gold" : ""}`} />
           </button>
         </div>
-        <div className="mt-3 flex items-baseline justify-between">
-          <h3 className="text-sm font-medium">{product.name}</h3>
-          <p className="text-sm">{formatPrice(product.price)}</p>
+        <div className="mt-4 flex items-baseline justify-between gap-2">
+          <h3 className="text-sm font-medium tracking-wide transition-colors group-hover:text-gold">
+            {product.name}
+          </h3>
+          <p className="text-sm font-semibold tabular-nums">{formatPrice(product.price)}</p>
         </div>
-        <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
-          {product.category}
-        </p>
+        <p className="label-eyebrow mt-1 text-muted-foreground">{product.category}</p>
       </Link>
     </motion.div>
   );

@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/lib/store";
 import { resolveLineOptions } from "@/lib/cart-line";
@@ -22,13 +21,9 @@ export const Route = createFileRoute("/checkout")({
 });
 
 const schema = z.object({
-  full_name: z.string().trim().min(1).max(120),
-  email: z.string().trim().email().max(255),
-  phone: z.string().trim().max(40).optional(),
-  address: z.string().trim().min(1).max(255),
-  city: z.string().trim().min(1).max(100),
-  postal_code: z.string().trim().min(1).max(20),
-  country: z.string().trim().min(1).max(100),
+  full_name: z.string().trim().min(1, "Nom requis").max(120),
+  address: z.string().trim().min(1, "Adresse requise").max(255),
+  phone: z.string().trim().min(1, "Téléphone requis").max(40),
   payment_method: z.enum(["cash_on_delivery"]),
 });
 
@@ -39,22 +34,12 @@ function CheckoutPage() {
   const total = useCart((s) => s.items.reduce((a, i) => a + i.quantity * i.product.price, 0));
   const clear = useCart((s) => s.clear);
   const [form, setForm] = useState({
-    full_name: "", 
-    email: user?.email ?? "guest@slistyle.com", 
+    full_name: "",
+    address: "",
     phone: "",
-    address: "", 
-    city: "", 
-    postal_code: "", 
-    country: "Maroc",
     payment_method: "cash_on_delivery" as PaymentMethod,
   });
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (user?.email) {
-      setForm((prev) => ({ ...prev, email: user.email }));
-    }
-  }, [user]);
 
   const shipping = total > FREE_SHIPPING_THRESHOLD || total === 0 ? 0 : SHIPPING_FEE;
   const grand = total + shipping;
@@ -62,7 +47,7 @@ function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-md px-6 py-32 text-center">
-        <h1 className="font-serif text-4xl">Your bag is empty</h1>
+        <h1 className="font-display text-4xl">Your bag is empty</h1>
         <button
           onClick={() => navigate({ to: "/" })}
           className="label-eyebrow mt-6 border border-foreground px-6 py-3"
@@ -77,16 +62,20 @@ function CheckoutPage() {
     e.preventDefault();
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
-      toast.error("Please fill in all required fields correctly.");
+      toast.error(parsed.error.errors[0]?.message ?? "Veuillez remplir tous les champs obligatoires.");
       return;
     }
     setSaving(true);
     try {
-      console.log("📦 Starting order submission on server...", { user_id: user?.id ?? null, form: parsed.data });
-
       const orderResult = await placeOrder({
         userId: user?.id ?? null,
-        orderData: parsed.data,
+        orderData: {
+          ...parsed.data,
+          email: user?.email ?? "guest@slistyle.com",
+          city: "—",
+          postal_code: "—",
+          country: "Maroc",
+        },
         items: items.map((i) => {
           const line = resolveLineOptions(i.product, i.size, i.color);
           return {
@@ -105,16 +94,11 @@ function CheckoutPage() {
         throw new Error(orderResult.error || "Could not place order");
       }
 
-      console.log("✅ Order placed successfully on server:", orderResult.orderId);
-
       clear();
-      toast.success("Order placed. Thank you.");
-      console.log("🎉 Order completed successfully");
+      toast.success("Commande enregistrée. Merci !");
       navigate({ to: "/" });
     } catch (err) {
-      console.error("💥 Full error object:", err);
-      const message = err instanceof Error ? err.message : "Could not place order";
-      console.error("🚨 Final error message:", message);
+      const message = err instanceof Error ? err.message : "Impossible de passer la commande";
       toast.error(message);
     } finally {
       setSaving(false);
@@ -123,39 +107,48 @@ function CheckoutPage() {
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-16">
-      <h1 className="font-serif text-5xl">Checkout</h1>
+      <h1 className="font-display text-5xl">Checkout</h1>
       {!user && (
         <p className="mt-2 text-sm text-muted-foreground">
-          Ordering as a guest — no account needed
+          Commande invité — aucun compte requis
         </p>
       )}
 
       <div className="mt-12 grid gap-12 md:grid-cols-[1fr_360px]">
         <form onSubmit={submit} className="space-y-4">
-          <h2 className="label-eyebrow">Contact & shipping</h2>
-          <Field label="Full name">
-            <input required value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="input" />
+          <h2 className="label-eyebrow">Livraison</h2>
+          <Field label="Nom complet *">
+            <input
+              required
+              autoComplete="name"
+              value={form.full_name}
+              onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+              className="input"
+            />
           </Field>
-          <Field label="Address">
-            <input required value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="input" />
+          <Field label="Adresse *">
+            <input
+              required
+              autoComplete="street-address"
+              value={form.address}
+              onChange={(e) => setForm({ ...form, address: e.target.value })}
+              className="input"
+            />
           </Field>
-          <div className="grid gap-4 md:grid-cols-3">
-            <Field label="Postal code">
-              <input required value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} className="input" />
-            </Field>
-            <Field label="City">
-              <input required value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="input" />
-            </Field>
-            <Field label="Country">
-              <input required value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className="input" />
-            </Field>
-          </div>
-          <Field label="Phone (optional)">
-            <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input" />
+          <Field label="Téléphone *">
+            <input
+              required
+              type="tel"
+              autoComplete="tel"
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              className="input"
+              placeholder="06 XX XX XX XX"
+            />
           </Field>
 
-          <h2 className="label-eyebrow pt-4">Payment</h2>
-          <Field label="Payment method">
+          <h2 className="label-eyebrow pt-4">Paiement</h2>
+          <Field label="Mode de paiement">
             <select
               required
               value={form.payment_method}
@@ -175,7 +168,7 @@ function CheckoutPage() {
             </select>
           </Field>
           <p className="text-xs text-muted-foreground">
-            Pay in cash when your order is delivered.
+            Paiement en espèces à la livraison.
           </p>
 
           <button
@@ -183,7 +176,7 @@ function CheckoutPage() {
             disabled={saving}
             className="label-eyebrow mt-4 w-full bg-foreground py-4 text-background transition hover:opacity-90 disabled:opacity-50"
           >
-            {saving ? "Placing order…" : `Place order — ${formatPrice(grand)}`}
+            {saving ? "Commande en cours…" : `Commander — ${formatPrice(grand)}`}
           </button>
         </form>
 
@@ -203,9 +196,18 @@ function CheckoutPage() {
             ))}
           </ul>
           <div className="mt-6 space-y-2 border-t border-border pt-4 text-sm">
-            <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{formatPrice(total)}</span></div>
-            <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span>{shipping === 0 ? "Free" : formatPrice(shipping)}</span></div>
-            <div className="mt-2 flex justify-between border-t border-border pt-2 font-medium"><span>Total</span><span>{formatPrice(grand)}</span></div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>Subtotal</span>
+              <span>{formatPrice(total)}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>Shipping</span>
+              <span>{shipping === 0 ? "Free" : formatPrice(shipping)}</span>
+            </div>
+            <div className="mt-2 flex justify-between border-t border-border pt-2 font-medium">
+              <span>Total</span>
+              <span>{formatPrice(grand)}</span>
+            </div>
           </div>
         </aside>
       </div>

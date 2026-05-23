@@ -4,10 +4,13 @@ import { useMemo, useState } from "react";
 import hommeImg from "@/assets/hero-homme.jpg";
 import femmeImg from "@/assets/hero-femme.jpg";
 import bannerImg from "@/assets/hero-banner.jpg";
+import { HeroBanner } from "@/components/HeroBanner";
 import { HeroImage } from "@/components/HeroImage";
 import { CategoryTabs } from "@/components/CategoryTabs";
 import { HERO_SIZE } from "@/lib/hero-image";
+import { fadeIn, heroTransition, staggerContainer } from "@/lib/motion";
 import { ProductCard } from "@/components/ProductCard";
+import { ScrollReveal } from "@/components/ScrollReveal";
 import { useProducts } from "@/hooks/use-products";
 import { fetchSettings } from "@/lib/settings";
 
@@ -15,10 +18,10 @@ export const Route = createFileRoute("/")({
   loader: () => fetchSettings(),
   head: () => ({
     meta: [
-      { title: "Slistyle — Autumn / Winter Collection" },
-      { name: "description", content: "Discover the new season. Minimal, elevated essentials for men and women." },
-      { property: "og:title", content: "Slistyle — Autumn / Winter Collection" },
-      { property: "og:description", content: "Discover the new season. Minimal, elevated essentials for men and women." },
+      { title: "Slistyle — Street Luxury" },
+      { name: "description", content: "Minimal streetwear essentials. Elevated fits for men and women." },
+      { property: "og:title", content: "Slistyle — Street Luxury" },
+      { property: "og:description", content: "Minimal streetwear essentials." },
     ],
   }),
   component: Home,
@@ -42,85 +45,82 @@ function Home() {
 
   return (
     <>
-      {/* Hero */}
-      <section className="relative">
-        <HeroImage
-          src={finalBanner}
-          alt="Slistyle Autumn Winter campaign"
-          width={HERO_SIZE.banner.width}
-          height={HERO_SIZE.banner.height}
-          targetWidth={HERO_SIZE.banner.targetWidth}
-          className="h-[80vh] w-full"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 flex flex-col items-center justify-end pb-16 text-center">
+      <HeroBanner src={finalBanner} alt="Slistyle collection" variant="banner">
+        <motion.div
+          className="mx-auto flex max-w-4xl flex-col items-center text-center"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
           <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="label-eyebrow text-background"
+            variants={fadeIn}
+            transition={heroTransition}
+            className="label-eyebrow text-gold"
           >
-            Autumn / Winter 26
+            Spring / Summer 26
           </motion.p>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.1 }}
-            className="font-serif text-5xl text-background md:text-7xl"
-          >
-            A quieter season.
-          </motion.h1>
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="mt-6 flex gap-3"
+            variants={fadeIn}
+            transition={{ ...heroTransition, delay: 0.08 }}
+            className="gold-accent-line mx-auto mt-4"
+          />
+          <motion.h1
+            variants={fadeIn}
+            transition={{ ...heroTransition, delay: 0.12 }}
+            className="font-display mt-6 text-5xl leading-[1.05] text-white md:text-7xl lg:text-8xl"
           >
-            <Link
-              to="/femme"
-              className="label-eyebrow border border-background bg-background px-6 py-3 text-foreground transition hover:bg-transparent hover:text-background"
-            >
+            Street luxury.
+            <span className="mt-2 block text-3xl font-normal tracking-[0.2em] text-white/90 md:text-4xl">
+              Defined.
+            </span>
+          </motion.h1>
+          <motion.p
+            variants={fadeIn}
+            transition={{ ...heroTransition, delay: 0.2 }}
+            className="mt-5 max-w-md text-sm font-light tracking-wide text-white/75"
+          >
+            Minimal silhouettes. Premium materials. Built for the city.
+          </motion.p>
+          <motion.div
+            variants={fadeIn}
+            transition={{ ...heroTransition, delay: 0.28 }}
+            className="mt-10 flex flex-wrap justify-center gap-3"
+          >
+            <Link to="/femme" className="btn-hero-primary">
               Shop Femme
             </Link>
-            <Link
-              to="/homme"
-              className="label-eyebrow border border-background px-6 py-3 text-background transition hover:bg-background hover:text-foreground"
-            >
+            <Link to="/homme" className="btn-hero-outline">
               Shop Homme
             </Link>
           </motion.div>
-        </div>
-      </section>
+        </motion.div>
+      </HeroBanner>
 
-      {/* Split categories */}
-      <section className="mx-auto max-w-7xl px-6 py-20">
+      <section className="mx-auto max-w-7xl px-6 py-20 md:py-28">
+        <ScrollReveal className="mb-12 text-center md:mb-16">
+          <p className="label-eyebrow text-gold">Collections</p>
+          <h2 className="font-display mt-3 text-4xl md:text-5xl">Choose your lane</h2>
+        </ScrollReveal>
         <div className="grid gap-6 md:grid-cols-2">
           {[
             {
               to: "/homme" as const,
               img: finalHomme,
               label: "Homme",
-              subtitle: "Tailored essentials",
+              subtitle: "Tailored street",
               spec: HERO_SIZE.homme,
             },
             {
               to: "/femme" as const,
               img: finalFemme,
               label: "Femme",
-              subtitle: "Fluid silhouettes",
+              subtitle: "Fluid lines",
               spec: HERO_SIZE.femmeCard,
             },
           ].map((c, i) => (
-            <motion.div
-              key={c.label}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-            >
+            <ScrollReveal key={c.label} delay={i * 0.1}>
               <Link to={c.to} className="group block">
-                <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
+                <div className="relative aspect-[3/4] overflow-hidden bg-ink">
                   <HeroImage
                     src={c.img}
                     alt={c.label}
@@ -128,33 +128,35 @@ function Home() {
                     height={c.spec.height}
                     targetWidth={c.spec.targetWidth}
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    className="transition-transform duration-1000 ease-out group-hover:scale-[1.02]"
+                    className="image-hover-zoom"
                   />
-                  <div className="absolute bottom-8 left-8 text-background">
-                    <p className="label-eyebrow">{c.subtitle}</p>
-                    <p className="mt-2 font-serif text-5xl">{c.label}</p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent transition-opacity duration-500 group-hover:from-black/90" />
+                  <div className="absolute bottom-8 left-8 text-white">
+                    <p className="label-eyebrow text-gold">{c.subtitle}</p>
+                    <p className="font-display mt-2 text-5xl tracking-wide">{c.label}</p>
                   </div>
                 </div>
               </Link>
-            </motion.div>
+            </ScrollReveal>
           ))}
         </div>
       </section>
 
-      {/* Featured products */}
-      <section className="mx-auto max-w-7xl px-6 pb-24">
-        <div className="mb-6">
-          <p className="label-eyebrow text-muted-foreground">The Edit</p>
-          <h2 className="mt-2 font-serif text-4xl">New arrivals</h2>
-        </div>
-        <CategoryTabs active={category} onChange={setCategory} className="mb-10" />
-        <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <section className="mx-auto max-w-7xl px-6 pb-28">
+        <ScrollReveal>
+          <p className="label-eyebrow text-gold">The Edit</p>
+          <h2 className="font-display mt-2 text-4xl md:text-5xl">New arrivals</h2>
+        </ScrollReveal>
+        <CategoryTabs active={category} onChange={setCategory} className="mb-10 mt-8" />
+        <div className="grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {isLoading ? (
-            <p className="col-span-full py-12 text-center text-sm text-muted-foreground">Loading…</p>
+            <p className="col-span-full py-12 text-center text-sm text-muted-foreground">
+              Loading…
+            </p>
           ) : displayed.length === 0 ? (
             <p className="col-span-full py-12 text-center text-sm text-muted-foreground">
               No pieces in this category yet.{" "}
-              <Link to="/homme" className="underline underline-offset-4">
+              <Link to="/homme" className="text-gold underline underline-offset-4">
                 Browse collections
               </Link>
             </p>
@@ -166,16 +168,15 @@ function Home() {
         </div>
       </section>
 
-      {/* Editorial strip */}
-      <section className="border-y border-border bg-secondary/50 py-24">
-        <div className="mx-auto max-w-3xl px-6 text-center">
-          <p className="label-eyebrow text-muted-foreground">The Atelier</p>
-          <p className="mt-6 font-serif text-3xl leading-relaxed md:text-4xl">
-            "We design fewer things, made better. Garments that earn their place in your life
-            and stay there."
+      <section className="border-y border-border bg-ink py-24 text-paper md:py-32">
+        <ScrollReveal className="mx-auto max-w-3xl px-6 text-center">
+          <p className="label-eyebrow text-gold">The Atelier</p>
+          <div className="gold-accent-line mx-auto mt-4" />
+          <p className="font-display mt-8 text-3xl leading-relaxed md:text-4xl">
+            Fewer pieces. Sharper fits. Garments that move with you — and stay.
           </p>
-          <p className="mt-6 label-eyebrow">— The Studio</p>
-        </div>
+          <p className="label-eyebrow mt-8 text-white/60">— SLISTYLE Studio</p>
+        </ScrollReveal>
       </section>
     </>
   );

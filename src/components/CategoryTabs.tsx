@@ -23,10 +23,10 @@ export function CategoryTabs({
             key={tab.label}
             type="button"
             onClick={() => onChange(tab.value)}
-            className={`label-eyebrow border px-4 py-2 transition ${
+            className={`label-eyebrow border px-4 py-2 transition-all duration-300 ease-out ${
               isActive
-                ? "border-foreground bg-foreground text-background"
-                : "border-border hover:border-foreground"
+                ? "border-gold bg-gold text-ink"
+                : "border-border hover:border-gold hover:text-gold"
             }`}
           >
             {tab.label}

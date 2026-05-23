@@ -27,7 +27,7 @@ export async function placeOrder(data: {
   orderData: {
     full_name: string;
     email: string;
-    phone?: string;
+    phone: string;
     address: string;
     city: string;
     postal_code: string;

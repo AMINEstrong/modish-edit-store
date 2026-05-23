@@ -1,5 +1,5 @@
 /**
- * Normalize hero JPEGs to 1920px width (default site size).
+ * Normalize hero JPEGs to 4K width (3840×2160).
  * Run: npm run optimize:heroes
  */
 import sharp from "sharp";
@@ -10,26 +10,27 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const assetsDir = resolve(__dirname, "../src/assets");
 
-const WIDTH = 1920;
+const WIDTH = 3840;
+const HEIGHT = 2160;
 
 /** Prefer highest-res source when available. */
 const jobs = [
   {
     out: "hero-banner.jpg",
     sources: ["hero", "hero-banner.jpg", "h.jpg"],
-    height: 1080,
+    height: HEIGHT,
     fit: "cover",
   },
   {
     out: "hero-homme.jpg",
     sources: ["hero", "h.jpg", "hero-homme.jpg"],
-    height: 1080,
+    height: HEIGHT,
     fit: "cover",
   },
   {
     out: "hero-femme.jpg",
     sources: ["hero-femme.jpg", "hero"],
-    height: 1080,
+    height: HEIGHT,
     fit: "cover",
   },
 ];
