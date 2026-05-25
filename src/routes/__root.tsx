@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 import { AddedToBagToast } from "@/components/AddedToBagToast";
 import { Navbar } from "@/components/Navbar";
+import { PromoBar } from "@/components/PromoBar";
 import { Footer } from "@/components/Footer";
 
 function NotFoundComponent() {
@@ -84,6 +85,7 @@ function RootComponent() {
       <AuthInvalidator queryClient={queryClient} />
       <div className="flex min-h-screen flex-col">
         <Navbar />
+        <PromoBar />
         <main className="flex-1">
           <Outlet />
         </main>
