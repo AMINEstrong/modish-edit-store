@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useCart, useWishlist } from "@/lib/store";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { PromoBanner } from "./PromoBanner";
+
 
 export function Navbar() {
   const navigate = useNavigate();
@@ -155,6 +157,8 @@ export function Navbar() {
           </Link>
         </div>
       </div>
+
+      <PromoBanner />
 
       {searchOpen && (
         <div className="hidden border-t border-border/80 md:block">

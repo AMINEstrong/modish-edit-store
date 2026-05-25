@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminOrdersSeen } from "@/lib/admin-orders-seen";
+import { refreshAdminNewOrdersCount } from "@/hooks/use-admin-new-orders";
 import { deleteOrder, updateOrderStatus } from "@/lib/orders";
 import { toast } from "sonner";
 import { formatColorLabel, formatPrice, formatSizeLabel } from "@/lib/format";
@@ -45,19 +47,44 @@ function AdminOrders() {
   const [open, setOpen] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const markSeenUpTo = useAdminOrdersSeen((s) => s.markSeenUpTo);
+  const markSeenNow = useAdminOrdersSeen((s) => s.markSeenNow);
+  const markOrdersAsSeen = useCallback(
+    (list: Order[]) => {
+      if (list.length === 0) {
+        markSeenNow();
+      } else {
+        const latest = list.reduce(
+          (max, o) => (o.created_at > max ? o.created_at : max),
+          list[0].created_at,
+        );
+        markSeenUpTo(latest);
+      }
+      void refreshAdminNewOrdersCount();
+    },
+    [markSeenNow, markSeenUpTo],
+  );
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("orders")
       .select("*, order_items(*)")
       .order("created_at", { ascending: false });
-    if (error) toast.error(error.message);
-    else setOrders(data as Order[]);
+    if (error) {
+      toast.error(error.message);
+      setLoading(false);
+      return;
+    }
+    const list = (data ?? []) as Order[];
+    setOrders(list);
+    markOrdersAsSeen(list);
     setLoading(false);
-  };
+  }, [markOrdersAsSeen]);
 
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
 
   const updateStatus = async (id: string, status: string) => {
     setUpdatingId(id);
