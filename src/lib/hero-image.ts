@@ -15,27 +15,27 @@ export const HERO_MIN_WIDTH = {
 } as const;
 
 /**
- * Supabase Storage: serve via image renderer at high quality (downscale only).
+ * Serve the public Storage object URL.
+ * Image Transformations (`/render/image/`) return 403 on this project, so we
+ * never rewrite to that endpoint — and convert any stored render URLs back.
  */
-export function resolveHeroImageUrl(
-  src: string,
-  targetWidth: number = HERO_SIZE.banner.targetWidth,
-): string {
+export function resolveHeroImageUrl(src: string, _targetWidth?: number): string {
   if (!src || src.startsWith("data:") || src.startsWith("blob:")) return src;
 
   try {
     const url = new URL(src);
     if (!url.hostname.includes("supabase.co")) return src;
-    if (!url.pathname.includes("/storage/v1/object/public/")) return src;
 
-    url.pathname = url.pathname.replace(
-      "/storage/v1/object/public/",
-      "/storage/v1/render/image/public/",
-    );
-    url.search = "";
-    url.searchParams.set("width", String(targetWidth));
-    url.searchParams.set("quality", "90");
-    return url.toString();
+    if (url.pathname.includes("/storage/v1/render/image/public/")) {
+      url.pathname = url.pathname.replace(
+        "/storage/v1/render/image/public/",
+        "/storage/v1/object/public/",
+      );
+      url.search = "";
+      return url.toString();
+    }
+
+    return src;
   } catch {
     return src;
   }
